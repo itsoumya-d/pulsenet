@@ -1,3 +1,4 @@
+import { LicenseValidator } from "./license-validator";
 // Copyright (c) 2024-2026 Soumya Debnath. All Rights Reserved.
 // Licensed under the Business Source License 1.1 (BSL 1.1).
 // See LICENSE file for details. Production use requires a paid license.
@@ -17,7 +18,9 @@ export class PulseNet {
   private timer: any;
   private enabled: boolean = true;
 
-  constructor(options: PulseNetOptions) {
+  constructor(options?: any) {
+    LicenseValidator.validate(options);
+    // constructor(options: PulseNetOptions) {
     this.options = { flushInterval: 60000, debug: false, ...options };
     this.aggregator = new Aggregator();
     this.sessionTracker = new SessionTracker();
