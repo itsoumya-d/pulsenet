@@ -832,7 +832,7 @@
                     ease: "power3.out",
                     scrollTrigger: {
                         trigger: elem,
-                        start: "top 85%",
+                        start: "top 88%", once: true,
                         toggleActions: "play none none none"
                     }
                 }
@@ -847,7 +847,7 @@
             
             ScrollTrigger.create({
                 trigger: el,
-                start: "top 85%",
+                start: "top 88%", once: true,
                 onEnter: () => {
                     let obj = { val: 0 };
                     gsap.to(obj, {
@@ -891,7 +891,7 @@
         
         ScrollTrigger.create({
             trigger: '.code-window',
-            start: "top 80%",
+            start: "top 88%", once: true,
             onEnter: () => {
                 let i = 0;
                 typewriter.innerText = '';
