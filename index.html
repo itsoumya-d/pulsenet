@@ -1,650 +1,910 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulseNet | Zero-Cookie Differential Privacy Analytics</title>
-    
-    <!-- SEO & Meta Tags -->
-    <meta name="description" content="PulseNet is a zero-cookie, differential privacy analytics platform. We add Laplace noise to analytics for mathematical privacy guarantees without sacrificing data accuracy. Perfect alternative to Mixpanel and GA 360.">
-    <link rel="canonical" href="https://itsoumya-d.github.io/pulsenet/">
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="PulseNet | Zero-Cookie Differential Privacy Analytics">
-    <meta property="og:description" content="Implement differential privacy with zero cookies. The mathematical guarantee for privacy-first analytics.">
-    <meta property="og:url" content="https://itsoumya-d.github.io/pulsenet/">
-    <meta property="og:image" content="https://itsoumya-d.github.io/pulsenet/og-image.png">
+    <title>PulseNet — Privacy-First Analytics | The Best Free Google Analytics Alternative</title>
+    <meta name="description" content="PulseNet is the ultimate privacy-first analytics platform. Zero cookies, zero PII, 100% GDPR compliant. Learn how we use differential privacy to protect user data while providing accurate insights.">
+    <meta property="og:title" content="PulseNet — Privacy-First Analytics">
+    <meta property="og:description" content="Analytics without surveillance. Zero cookies. Zero PII. Protect your users today.">
     <meta property="og:type" content="website">
-    
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PulseNet | Privacy-First Analytics">
-    <meta name="twitter:description" content="Mathematical privacy guarantees using Laplace noise. Zero cookies, full accuracy.">
     
-    <!-- Fonts: Inter + Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     
-    <!-- JSON-LD Structured Data -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "SoftwareApplication",
-          "name": "PulseNet",
-          "applicationCategory": "BusinessApplication",
-          "operatingSystem": "Any",
-          "description": "Zero-cookie, differential privacy analytics platform utilizing Laplace noise for mathematical privacy guarantees.",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD",
-            "license": "BSL 1.1"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Soumya Debnath",
-            "email": "soumyadebnath1661@gmail.com",
-            "telephone": "+91 7031648617"
-          }
-        },
-        {
-          "@type": "FAQPage",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "What is differential privacy?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Differential privacy provides a mathematical framework for quantifying and managing privacy risks. By adding calibrated Laplace noise, it ensures that the output of an analysis does not significantly change whether any specific individual's data is included or not."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Does PulseNet use cookies?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "No. PulseNet uses a strict zero-cookie architecture, relying on transient, anonymous event streaming without persisting identifiable client-side state."
-              }
-            }
-          ]
-        },
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": [{
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Home",
-            "item": "https://itsoumya-d.github.io/pulsenet/"
-          }]
-        }
-      ]
+      "@type": "SoftwareApplication",
+      "name": "PulseNet",
+      "operatingSystem": "Web",
+      "applicationCategory": "BusinessApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
     }
     </script>
-    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "What is the best free alternative to Google Analytics?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PulseNet is widely considered the best free Google Analytics alternative. It offers a lightweight (<1KB) tracking script, zero cookies, and utilizes differential privacy to ensure 100% GDPR compliance without sacrificing actionable insights. Unlike GA, PulseNet does not store personally identifiable information (PII) and does not require a cookie consent banner."
+        }
+      }]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://pulsenet.dev"
+      }]
+    }
+    </script>
+
     <style>
         :root {
+            /* Type Scale */
+            --text-12: 0.75rem;
+            --text-14: 0.875rem;
+            --text-16: 1rem;
+            --text-20: 1.25rem;
+            --text-24: 1.5rem;
+            --text-32: 2rem;
+            --text-48: 3rem;
+            --text-64: 4rem;
+            --text-80: 5rem;
+            
+            /* Colors */
             --bg-color: #0F172A;
             --primary: #10B981;
             --secondary: #6366F1;
-            --accent: #38BDF8;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --glass-bg: rgba(30, 41, 59, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --tertiary: #38BDF8;
+            --text-body: #CBD5E1;
+            --text-heading: #F1F5F9;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-bg-hover: rgba(255, 255, 255, 0.04);
+            
+            /* Spacing */
+            --space-8: 8px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --space-48: 48px;
+            --space-64: 64px;
+            --space-96: 96px;
+            --space-120: 120px;
         }
-        
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-main);
+            color: var(--text-body);
             font-family: 'Inter', sans-serif;
+            font-weight: 300;
+            font-size: var(--text-16);
+            line-height: 1.5;
             overflow-x: hidden;
-            line-height: 1.6;
             position: relative;
         }
 
-        h1, h2, h3, h4, .outfit {
+        h1, h2, h3, h4, h5, h6 {
             font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
         }
 
-        /* Glowing Mesh Gradient Background */
-        .mesh-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
-            background: 
-                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 50% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
-            filter: blur(60px);
-        }
+        h1 { font-size: var(--text-80); }
+        h2 { font-size: var(--text-48); line-height: 1.2; }
+        h3 { font-size: var(--text-32); line-height: 1.3; }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 2rem;
-        }
-
-        header {
-            padding: 2rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: -1px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .logo span {
-            color: var(--text-main);
-        }
-
-        .btn {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: #fff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
+        a {
+            color: var(--tertiary);
             text-decoration: none;
-            font-weight: 600;
-            font-family: 'Outfit', sans-serif;
-            border: none;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s ease;
         }
-        .btn:hover { opacity: 0.9; }
         
+        a:hover {
+            opacity: 0.8;
+        }
+
+        /* Noise Overlay */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 4rem 5%;
+            padding: 0 var(--space-24);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: var(--text-20);
+            font-weight: 700;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--space-32);
+        }
+
+        .nav-links a {
+            color: var(--text-body);
+            font-size: var(--text-14);
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-heading);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            padding: var(--space-16) var(--space-32);
+            border-radius: 12px;
+            font-size: var(--text-16);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #059669);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 25px rgba(16, 185, 129, 0.3);
         }
 
         /* Hero Section */
         .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 6rem 0;
+            padding-top: 64px;
+            position: relative;
         }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            font-size: var(--text-12);
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: var(--space-24);
+        }
+
         .hero h1 {
-            font-size: 4rem;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(to right, #F8FAFC, var(--primary));
+            margin-bottom: var(--space-24);
+            background: linear-gradient(to right, #F1F5F9, #94A3B8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .hero p {
-            font-size: 1.25rem;
-            color: var(--text-muted);
+            font-size: var(--text-20);
+            margin-bottom: var(--space-48);
+            color: var(--text-body);
             max-width: 600px;
-            margin: 0 auto 3rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .shield-icon {
+            margin: 0 auto var(--space-32);
+            width: 80px;
+            height: 80px;
+        }
+
+        /* Sections */
+        section {
+            padding: var(--space-120) 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--space-64);
+        }
+
+        .section-header h2 {
+            margin-bottom: var(--space-16);
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-32);
+            text-align: center;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: var(--space-48);
+            transition: border-color 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .metric-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: var(--text-64);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: var(--space-8);
+        }
+
+        /* Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-24);
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: var(--space-32);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: var(--card-bg-hover);
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-24);
+            color: var(--secondary);
+        }
+
+        .feature-card h3 {
+            font-size: var(--text-24);
+            margin-bottom: var(--space-16);
+        }
+
+        /* Cost Comparison */
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .cost-table th, .cost-table td {
+            padding: var(--space-24);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .cost-table th {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            color: var(--text-heading);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .highlight-row {
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .highlight-row td {
+            color: var(--primary);
+            font-weight: 700;
         }
 
         /* Interactive Demo */
-        .demo-section {
-            margin: 4rem 0;
-        }
-        .demo-section h2 {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            color: var(--accent);
-        }
-        .demo-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            align-items: center;
-        }
-        .canvas-wrapper {
-            width: 100%;
-            height: 300px;
+        .demo-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            overflow: hidden;
-            background: #020617;
-            position: relative;
-        }
-        canvas {
-            width: 100%;
-            height: 100%;
-        }
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        .slider-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .slider-group label {
-            display: flex;
-            justify-content: space-between;
-            font-weight: 500;
-            color: var(--secondary);
-        }
-        input[type="range"] {
-            width: 100%;
-            accent-color: var(--primary);
-        }
-
-        /* Architecture Grid */
-        .architecture-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 4rem 0;
-        }
-        .arch-card {
-            padding: 2rem;
-            border-radius: 16px;
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
-            border: 1px solid var(--glass-border);
-        }
-        .arch-card h3 {
-            color: var(--primary);
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-
-        /* Calculator */
-        .calc-section {
-            margin: 6rem 0;
-        }
-        .calc-section h2 {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-        }
-        .calculator {
-            max-width: 600px;
+            padding: var(--space-48);
+            max-width: 800px;
             margin: 0 auto;
-            text-align: center;
-        }
-        .calc-input {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.25rem;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--secondary);
-            color: #fff;
-            margin-bottom: 2rem;
-        }
-        .calc-results {
-            display: flex;
-            justify-content: space-around;
-            gap: 1rem;
-        }
-        .result-card {
-            flex: 1;
-            padding: 1.5rem;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-        }
-        .result-card.pulse {
-            border: 2px solid var(--primary);
-            background: rgba(16, 185, 129, 0.1);
-        }
-        .result-price {
-            font-size: 2rem;
-            font-weight: 700;
-            font-family: 'Outfit';
-            margin-top: 0.5rem;
         }
 
-        /* Code Tab Switcher */
-        .code-section {
-            margin: 4rem 0;
+        .slider-container {
+            margin: var(--space-32) 0;
         }
-        .code-header {
-            display: flex;
-            gap: 1rem;
-            border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 1rem;
-            margin-bottom: 1rem;
+        
+        input[type=range] {
+            width: 100%;
+            -webkit-appearance: none;
+            background: var(--border-color);
+            height: 4px;
+            border-radius: 2px;
+            outline: none;
         }
-        .tab-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1rem;
-            font-family: 'Outfit';
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
             cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(16,185,129,0.5);
         }
-        .tab-btn.active {
-            background: var(--glass-border);
-            color: var(--text-main);
-        }
-        .code-block {
-            display: none;
-            background: #020617;
-            padding: 1.5rem;
+
+        /* Code Playground */
+        .code-window {
+            background: #000;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .code-header {
+            background: var(--card-bg);
+            padding: var(--space-16);
+            display: flex;
+            gap: var(--space-8);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .code-dot {
+            width: 12px; height: 12px; border-radius: 50%; background: #334155;
+        }
+
+        .code-content {
+            padding: var(--space-32);
             font-family: monospace;
-            color: #A5B4FC;
+            font-size: var(--text-14);
+            color: var(--text-body);
             overflow-x: auto;
         }
-        .code-block.active {
-            display: block;
+        
+        .typewriter-text {
+            color: var(--tertiary);
         }
 
-        /* Content Blocks */
-        .content-block {
-            margin: 4rem 0;
-        }
-        .content-block h2 {
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        footer {
-            background: rgba(0,0,0,0.5);
-            padding: 3rem 5%;
-            margin-top: 6rem;
-            border-top: 1px solid var(--glass-border);
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-        .footer-grid {
+        /* Pricing */
+        .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-32);
+        }
+        
+        .pricing-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: var(--space-48);
+            text-align: center;
+        }
+        
+        .pricing-card h3 {
+            margin-bottom: var(--space-8);
+        }
+        
+        .pricing-price {
+            font-size: var(--text-48);
+            font-weight: 700;
+            color: var(--text-heading);
+            margin: var(--space-24) 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* FAQ */
+        .faq-item {
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--space-32) 0;
+            max-width: 800px;
             margin: 0 auto;
         }
-        .footer-col h4 {
-            color: #fff;
-            margin-bottom: 1rem;
+        
+        .faq-item h3 {
+            font-size: var(--text-20);
+            margin-bottom: var(--space-16);
         }
-        .footer-col a {
-            color: var(--text-muted);
-            text-decoration: none;
-            display: block;
-            margin-bottom: 0.5rem;
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: var(--space-64) 0;
+            margin-top: var(--space-64);
+            text-align: center;
+            color: #64748B;
         }
-        .footer-col a:hover {
-            color: var(--accent);
+
+        @media (max-width: 768px) {
+            section { padding: 80px 0; }
+            h1 { font-size: var(--text-48); }
+            h2 { font-size: var(--text-32); }
+            .nav-links { display: none; }
         }
     </style>
 </head>
 <body>
+    <div class="noise"></div>
 
-    <div class="mesh-bg"></div>
+    <nav>
+        <div class="container nav-content">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                PulseNet
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#architecture">Architecture</a>
+                <a href="#pricing">Pricing</a>
+            </div>
+            <button class="btn btn-primary" style="height: 36px; padding: 0 16px; font-size: 14px;">Get Started</button>
+        </div>
+    </nav>
 
-    <header>
-        <div class="logo">Pulse<span>Net</span></div>
-        <button class="btn">Deploy Now</button>
-    </header>
+    <section class="hero">
+        <div class="container hero-content">
+            <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M12 8v4"/>
+                <path d="M12 16h.01"/>
+            </svg>
+            <div class="badge">Nordic Bio-Mint Privacy Shield</div>
+            <h1 class="hero-title">Analytics without surveillance.<br>Zero cookies. Zero PII.</h1>
+            <p class="hero-desc">Discover actionable insights without compromising user trust. The ultimate privacy-first platform built on differential privacy.</p>
+            <button class="btn btn-primary hero-btn">Deploy PulseNet Today</button>
+        </div>
+    </section>
 
-    <div class="container">
-        <section class="hero">
-            <h1>Zero-Cookie Privacy.<br>Mathematical Guarantees.</h1>
-            <p>PulseNet injects calibrated Laplace noise into your analytics streams, guaranteeing user privacy via Differential Privacy while keeping aggregate insights 99.9% accurate.</p>
-            <button class="btn" style="font-size: 1.2rem; padding: 1rem 2rem;">Read Documentation</button>
-        </section>
-
-        <section class="demo-section">
-            <h2>Interactive Differential Privacy Simulation</h2>
-            <div class="demo-container glass-panel">
-                <div class="canvas-wrapper">
-                    <canvas id="dpCanvas"></canvas>
+    <section id="metrics">
+        <div class="container">
+            <div class="metrics-grid">
+                <div class="metric-card gs-reveal">
+                    <div class="metric-value" data-val="0">0</div>
+                    <p>Cookies Used</p>
                 </div>
-                <div class="controls">
-                    <h3>Adjust Privacy Budget (ε)</h3>
-                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">
-                        Lower epsilon = More Noise = Higher Privacy.<br>
-                        Higher epsilon = Less Noise = Higher Accuracy.
-                    </p>
-                    <div class="slider-group">
-                        <label>
-                            <span>Epsilon (ε)</span>
-                            <span id="epsValue">1.0</span>
-                        </label>
-                        <input type="range" id="epsilonSlider" min="0.1" max="5" step="0.1" value="1.0">
-                    </div>
-                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                            <span>True Aggregate:</span> <span style="color:var(--primary); font-weight:bold;">1000</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Noisy Aggregate:</span> <span id="noisyValue" style="color:var(--secondary); font-weight:bold;">1000</span>
-                        </div>
-                    </div>
+                <div class="metric-card gs-reveal">
+                    <div class="metric-value" data-val="100">0</div>
+                    <p>% GDPR Compliant</p>
                 </div>
-            </div>
-        </section>
-
-        <section class="architecture-grid">
-            <div class="arch-card">
-                <h3>Zero-Cookie Architecture</h3>
-                <p>No `document.cookie`, no `localStorage`. We use transient, ephemeral connection states via WebSocket/WebRTC to stream events directly to edge nodes without persisting identity.</p>
-            </div>
-            <div class="arch-card">
-                <h3>Laplace Noise Engine</h3>
-                <p>Events are obfuscated at the client or edge using the Laplace mechanism (Δf/ε). Individual data points become statistically indistinguishable from background noise.</p>
-            </div>
-            <div class="arch-card">
-                <h3>Edge Inference</h3>
-                <p>Our WASM-compiled Rust agents perform micro-aggregations on the edge, ensuring raw PII never touches a centralized server or database.</p>
-            </div>
-        </section>
-
-        <section class="calc-section glass-panel">
-            <h2>Analytics Cost ROI Calculator</h2>
-            <p style="text-align:center; margin-bottom: 2rem; color: var(--text-muted);">Compare PulseNet's unmetered infrastructure vs legacy vendors.</p>
-            
-            <div class="calculator">
-                <label style="display:block; text-align:left; margin-bottom:0.5rem; color:var(--accent);">Monthly Tracked Users (MTU)</label>
-                <input type="number" id="mtuInput" class="calc-input" value="100000" min="10000">
-                
-                <div class="calc-results">
-                    <div class="result-card">
-                        <div>Mixpanel / GA360 (Est.)</div>
-                        <div class="result-price" id="legacyPrice" style="color: #F43F5E;">$899/mo</div>
-                    </div>
-                    <div class="result-card pulse">
-                        <div>PulseNet (BSL 1.1)</div>
-                        <div class="result-price" style="color: var(--primary);">Self-Hosted: $0</div>
-                        <div style="font-size:0.8rem; margin-top:0.5rem; color:var(--text-muted);">Cloud: $49/mo Flat</div>
-                    </div>
+                <div class="metric-card gs-reveal">
+                    <div class="metric-value" style="display:inline-block;" data-val="1">0</div><span class="metric-value">KB</span>
+                    <p>Script Size</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="code-section glass-panel">
-            <div class="code-header">
-                <button class="tab-btn active" onclick="switchTab('js')">Browser JS</button>
-                <button class="tab-btn" onclick="switchTab('react')">React Hook</button>
+    <section id="cost">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Stop overpaying for analytics.</h2>
+                <p>Enterprise power. Indie pricing.</p>
             </div>
-            <div id="code-js" class="code-block active">
-import { PulseNet } from '@pulsenet/client';
+            <table class="cost-table gs-reveal">
+                <thead>
+                    <tr>
+                        <th>Platform</th>
+                        <th>Privacy Setup</th>
+                        <th>Starting Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Google Analytics 360</td>
+                        <td>Complex (Requires Consent)</td>
+                        <td>$150,000 / yr</td>
+                    </tr>
+                    <tr>
+                        <td>Mixpanel (Enterprise)</td>
+                        <td>Requires Engineering</td>
+                        <td>$2,289 / mo</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>PulseNet</td>
+                        <td>Built-in (Zero Cookies)</td>
+                        <td>$0 (BSL 1.1)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-const analytics = new PulseNet({
-  publicKey: 'pn_pub_12345',
-  epsilon: 1.5, // Privacy budget
-  zeroCookie: true
-});
-
-// Sends data with Laplace noise injected locally
-analytics.track('checkout_completed', {
-  revenue: 149.99
-});
+    <section id="architecture">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Differential Privacy Architecture</h2>
+                <p>How we guarantee anonymity.</p>
             </div>
-            <div id="code-react" class="code-block">
-import { usePulseNet } from '@pulsenet/react';
-
-function CheckoutButton() {
-  const { track } = usePulseNet();
-
-  return (
-    <button onClick={() => track('click', { component: 'checkout' })}>
-      Complete Order
-    </button>
-  );
-}
+            <div class="features-grid">
+                <div class="feature-card gs-reveal">
+                    <h3>1. Collect</h3>
+                    <p>We gather raw events locally without identifiers.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <h3>2. Add Noise</h3>
+                    <p>Laplace noise is injected at the edge before transmission.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <h3>3. Aggregate</h3>
+                    <p>Data is cryptographically combined on our servers.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <h3>4. Report</h3>
+                    <p>You see accurate trends, totally untraceable to individuals.</p>
+                </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="content-block">
-            <h2>Why Differential Privacy?</h2>
-            <p>Differential privacy provides a mathematical framework for quantifying and managing privacy risks. By adding calibrated Laplace noise to analytics streams, it ensures that the output of an analysis does not significantly change whether any specific individual's data is included or not. This protects against linkage attacks and deanonymization, making it the gold standard for compliance (GDPR, CCPA) while preserving high-fidelity statistical aggregates for business intelligence.</p>
-        </section>
-    </div>
+    <section id="demo">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Interactive Demo: The Privacy Tradeoff</h2>
+                <p>Adjust the Laplace noise parameter to see how differential privacy protects individuals while preserving aggregate accuracy.</p>
+            </div>
+            <div class="demo-box gs-reveal">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3>Privacy Level (Epsilon): <span id="epsilon-val" style="color: var(--primary);">1.0</span></h3>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; color: #64748B;">Aggregate Accuracy</div>
+                        <div id="accuracy-val" style="font-weight: 700; color: #fff;">95%</div>
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="noise-slider" min="0.1" max="10" step="0.1" value="1.0">
+                </div>
+                <p style="font-size: 14px; color: #64748B;">Lower epsilon = higher privacy, more noise. Higher epsilon = lower privacy, less noise.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="code">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Developer First</h2>
+                <p>Drop-in script. No dependencies.</p>
+            </div>
+            <div class="code-window gs-reveal">
+                <div class="code-header">
+                    <div class="code-dot" style="background:#EF4444;"></div>
+                    <div class="code-dot" style="background:#F59E0B;"></div>
+                    <div class="code-dot" style="background:#10B981;"></div>
+                </div>
+                <div class="code-content">
+                    <span style="color:#6366F1;">&lt;script</span> <span style="color:#38BDF8;">src=</span><span style="color:#A3E635;">"https://cdn.pulsenet.dev/v1.js"</span> <span style="color:#38BDF8;">data-site=</span><span style="color:#A3E635;">"YOUR_ID"</span> <span style="color:#6366F1;">defer&gt;&lt;/script&gt;</span>
+                    <br><br>
+                    <span style="color:#64748B;">// Track custom events</span><br>
+                    <span class="typewriter-text">pulsenet.track('signup', { plan: 'pro' });</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Everything you need. Nothing you don't.</h2>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card gs-reveal">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Differential Privacy</h3>
+                    <p>Mathematical guarantees that individual data cannot be reverse-engineered.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <div class="feature-icon">🍪</div>
+                    <h3>Zero Cookies</h3>
+                    <p>Ditch the cookie banners. We use anonymous session models instead.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <div class="feature-icon">🏠</div>
+                    <h3>1st Party Hosting</h3>
+                    <p>Bypass ad-blockers naturally by proxying through your own domain.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightweight</h3>
+                    <p>Under 1KB gzipped. Doesn't impact your Core Web Vitals.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>Real-time</h3>
+                    <p>See visitors on your site right now, securely and privately.</p>
+                </div>
+                <div class="feature-card gs-reveal">
+                    <div class="feature-icon">📤</div>
+                    <h3>Export Anywhere</h3>
+                    <p>Full API access to pipe your aggregated data to your data warehouse.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Frequently Asked Questions</h2>
+            </div>
+            <article class="faq-item gs-reveal">
+                <h3>What is the best free Google Analytics alternative?</h3>
+                <p>PulseNet is widely considered the best free Google Analytics alternative. It offers a lightweight (&lt;1KB) tracking script, zero cookies, and utilizes differential privacy to ensure 100% GDPR compliance without sacrificing actionable insights. Unlike GA, PulseNet does not store personally identifiable information (PII) and does not require a cookie consent banner.</p>
+            </article>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Simple, transparent pricing</h2>
+                <p>BSL 1.1 Licensed. Open source for non-commercial use.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card gs-reveal">
+                    <h3>Indie</h3>
+                    <div class="pricing-price">$199<span style="font-size:16px;color:#64748B;">/yr</span></div>
+                    <p style="margin-bottom:24px;">Up to 100k events/mo</p>
+                    <button class="btn btn-primary" style="width:100%;">Choose Indie</button>
+                </div>
+                <div class="pricing-card gs-reveal" style="border-color: var(--primary); position: relative;">
+                    <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--primary); color:#000; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:700;">MOST POPULAR</div>
+                    <h3>Startup</h3>
+                    <div class="pricing-price">$1,499<span style="font-size:16px;color:#64748B;">/yr</span></div>
+                    <p style="margin-bottom:24px;">Up to 1M events/mo</p>
+                    <button class="btn btn-primary" style="width:100%;">Choose Startup</button>
+                </div>
+                <div class="pricing-card gs-reveal">
+                    <h3>Enterprise</h3>
+                    <div class="pricing-price">$7,999<span style="font-size:16px;color:#64748B;">/yr</span></div>
+                    <p style="margin-bottom:24px;">Unlimited events</p>
+                    <button class="btn btn-primary" style="width:100%;">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <footer>
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>PulseNet</h4>
-                <p>Privacy-First Analytics.</p>
-                <p style="margin-top: 1rem; color: var(--primary);">License: BSL 1.1</p>
-            </div>
-            <div class="footer-col">
-                <h4>Developer</h4>
-                <p>Soumya Debnath</p>
-                <a href="mailto:soumyadebnath1661@gmail.com">soumyadebnath1661@gmail.com</a>
-                <a href="tel:+917031648617">+91 7031648617</a>
-            </div>
-            <div class="footer-col">
-                <h4>Legal</h4>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Cookie Policy (Wait, we don't use them!)</a>
-            </div>
+        <div class="container">
+            <p>&copy; 2026 PulseNet Inc. Built with privacy in mind. BSL 1.1 Licensed.</p>
         </div>
     </footer>
 
     <script>
-        // Laplace Noise Interactive Demo
-        const canvas = document.getElementById('dpCanvas');
-        const ctx = canvas.getContext('2d');
-        const slider = document.getElementById('epsilonSlider');
-        const epsValue = document.getElementById('epsValue');
-        const noisyValue = document.getElementById('noisyValue');
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
 
-        function resize() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+        // Hero Animation
+        const heroTimeline = gsap.timeline();
+        
+        // Simple character split for hero title
+        const title = document.querySelector('.hero-title');
+        const text = title.innerText;
+        title.innerHTML = '';
+        text.split('').forEach(char => {
+            const span = document.createElement('span');
+            span.innerText = char === ' ' ? '\u00A0' : char;
+            span.style.opacity = '0';
+            span.style.display = 'inline-block';
+            title.appendChild(span);
+        });
 
-        // Generate Laplace Noise
-        function laplaceNoise(scale) {
-            const u = Math.random() - 0.5;
-            return -scale * Math.sign(u) * Math.log(1 - 2 * Math.abs(u));
-        }
+        heroTimeline.fromTo('.shield-icon', 
+            { y: -30, opacity: 0 }, 
+            { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
+        )
+        .fromTo('.badge',
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
+            "-=0.5"
+        )
+        .to('.hero-title span', {
+            opacity: 1,
+            y: 0,
+            stagger: 0.03,
+            duration: 0.5,
+            ease: "power3.out"
+        }, "-=0.3")
+        .fromTo('.hero-desc',
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+            "-=0.2"
+        )
+        .fromTo('.hero-btn',
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+            "-=0.4"
+        );
 
-        let time = 0;
-        const trueValue = 1000;
-        const historyLength = 100;
-        const dataTrue = Array(historyLength).fill(trueValue);
-        const dataNoisy = Array(historyLength).fill(trueValue);
+        // General Section Reveals
+        const reveals = gsap.utils.toArray('.gs-reveal');
+        reveals.forEach(elem => {
+            gsap.fromTo(elem, 
+                { y: 60, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: elem,
+                        start: "top 85%",
+                        toggleActions: "play none none none"
+                    }
+                }
+            );
+        });
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // CountUp for Metrics
+        const metricValues = document.querySelectorAll('.metric-value');
+        metricValues.forEach(el => {
+            const target = parseInt(el.getAttribute('data-val'));
+            if(isNaN(target)) return;
             
-            // Grid
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-            ctx.lineWidth = 1;
-            for(let i=0; i<canvas.width; i+=40) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-            }
-            for(let i=0; i<canvas.height; i+=40) {
-                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
-            }
+            ScrollTrigger.create({
+                trigger: el,
+                start: "top 85%",
+                onEnter: () => {
+                    let obj = { val: 0 };
+                    gsap.to(obj, {
+                        val: target,
+                        duration: 2,
+                        ease: "power3.out",
+                        onUpdate: () => {
+                            el.innerText = Math.floor(obj.val);
+                        }
+                    });
+                }
+            });
+        });
 
-            const epsilon = parseFloat(slider.value);
-            const sensitivity = 50; // Arbitrary sensitivity for visual effect
-            const scale = sensitivity / epsilon;
-            
-            const currentNoisy = trueValue + laplaceNoise(scale);
-            
-            dataTrue.push(trueValue);
-            dataTrue.shift();
-            dataNoisy.push(currentNoisy);
-            dataNoisy.shift();
-
-            // Draw True Line
-            ctx.beginPath();
-            ctx.strokeStyle = '#10B981'; // Primary
-            ctx.lineWidth = 3;
-            for(let i=0; i<historyLength; i++) {
-                const x = (i / historyLength) * canvas.width;
-                const y = canvas.height/2; // Static true value mapped to center
-                if(i===0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-
-            // Draw Noisy Line
-            ctx.beginPath();
-            ctx.strokeStyle = '#6366F1'; // Secondary
-            ctx.lineWidth = 2;
-            for(let i=0; i<historyLength; i++) {
-                const x = (i / historyLength) * canvas.width;
-                // Map values between 500 and 1500 to canvas height
-                const normalizedY = (dataNoisy[i] - 500) / 1000; 
-                const y = canvas.height - (normalizedY * canvas.height);
-                if(i===0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-
-            noisyValue.innerText = Math.round(currentNoisy);
-            
-            requestAnimationFrame(draw);
-        }
+        // Interactive Demo Logic
+        const slider = document.getElementById('noise-slider');
+        const epsVal = document.getElementById('epsilon-val');
+        const accVal = document.getElementById('accuracy-val');
 
         slider.addEventListener('input', (e) => {
-            epsValue.innerText = e.target.value;
-        });
-
-        draw();
-
-        // Calculator Logic
-        const mtuInput = document.getElementById('mtuInput');
-        const legacyPrice = document.getElementById('legacyPrice');
-        
-        mtuInput.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value) || 0;
-            // Dummy proprietary pricing formula
-            let price = 899;
-            if (val > 100000) {
-                price = 899 + Math.floor((val - 100000) / 10000) * 50;
-            } else if (val < 100000) {
-                price = Math.max(199, Math.floor(val / 1000) * 9);
-            }
-            legacyPrice.innerText = '$' + price + '/mo';
-        });
-
-        // Tab Logic
-        window.switchTab = function(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.code-block').forEach(c => c.classList.remove('active'));
+            const val = parseFloat(e.target.value);
+            epsVal.innerText = val.toFixed(1);
             
-            event.target.classList.add('active');
-            document.getElementById('code-' + tab).classList.add('active');
-        }
+            // simple mock calculation for accuracy based on epsilon
+            // low eps -> low acc, high eps -> high acc
+            let acc = 60 + (val / 10) * 39; 
+            if(val === 10) acc = 99.9;
+            
+            accVal.innerText = acc.toFixed(1) + '%';
+            
+            // color update
+            const hue = 152; // roughly primary green
+            const lightness = Math.max(30, 80 - val * 3);
+            epsVal.style.color = `hsl(${hue}, 83%, ${lightness}%)`;
+        });
+        
+        // Typewriter effect for code
+        const typewriter = document.querySelector('.typewriter-text');
+        const originalText = typewriter.innerText;
+        typewriter.innerText = '';
+        
+        ScrollTrigger.create({
+            trigger: '.code-window',
+            start: "top 80%",
+            onEnter: () => {
+                let i = 0;
+                typewriter.innerText = '';
+                const type = setInterval(() => {
+                    if (i < originalText.length) {
+                        typewriter.innerText += originalText.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(type);
+                    }
+                }, 50);
+            }
+        });
     </script>
 </body>
 </html>

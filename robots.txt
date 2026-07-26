@@ -13,7 +13,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-User-agent: Bingbot
-Allow: /
-
-Sitemap: https://itsoumya-d.github.io/pulsenet/sitemap.xml
+Sitemap: https://pulsenet.dev/sitemap.xml
