@@ -10,7 +10,7 @@
   },
   "keywords": ["analytics", "privacy", "privacy-first"],
   "author": "Soumya Debnath",
-  "license": "AGPL-3.0-only",
+  "license": "BSL-1.1",
   "devDependencies": {
     "tsup": "^8.0.2",
     "typescript": "^5.4.5"
