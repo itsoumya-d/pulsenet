@@ -89,12 +89,11 @@ func handleSessions(store *Store) http.HandlerFunc {
 		var totalSessions float64
 		var sumAvgDuration float64
 		var sumBounceRate float64
-		count := float64(len(payloads))
 
 		for _, p := range payloads {
 			totalSessions += p.Sessions.Count
-			sumAvgDuration += p.Sessions.AvgDurationSec
-			sumBounceRate += p.Sessions.BounceRate
+			sumAvgDuration += p.Sessions.AvgDurationSec * p.Sessions.Count
+			sumBounceRate += p.Sessions.BounceRate * p.Sessions.Count
 		}
 
 		response := map[string]interface{}{
@@ -102,9 +101,9 @@ func handleSessions(store *Store) http.HandlerFunc {
 			"avgDurationSec": 0,
 			"bounceRate": 0,
 		}
-		if count > 0 {
-			response["avgDurationSec"] = sumAvgDuration / count
-			response["bounceRate"] = sumBounceRate / count
+		if totalSessions > 0 {
+			response["avgDurationSec"] = sumAvgDuration / totalSessions
+			response["bounceRate"] = sumBounceRate / totalSessions
 		}
 
 		w.Header().Set("Content-Type", "application/json")

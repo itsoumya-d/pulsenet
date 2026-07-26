@@ -21,7 +21,7 @@ func NewStore(dsn string) (*Store, error) {
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS payloads (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			app_id TEXT NOT nil,
+			app_id TEXT NOT NULL,
 			start_time INTEGER,
 			end_time INTEGER,
 			data TEXT
