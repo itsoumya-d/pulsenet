@@ -1,31 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulseNet | Best Free Privacy-First Web Analytics</title>
-    <meta name="description" content="PulseNet is the best free alternative to Google Analytics 360, Mixpanel, and Amplitude. A zero-cookie, GDPR-compliant client-side analytics engine.">
-    <meta name="keywords" content="free privacy first web analytics, zero cookie analytics engine, GDPR compliant client side analytics, alternative to Google Analytics 360, alternative to Mixpanel">
+    <title>PulseNet | Zero-Cookie Differential Privacy Analytics</title>
+    
+    <!-- SEO & Meta Tags -->
+    <meta name="description" content="PulseNet is a zero-cookie, differential privacy analytics platform. We add Laplace noise to analytics for mathematical privacy guarantees without sacrificing data accuracy. Perfect alternative to Mixpanel and GA 360.">
     <link rel="canonical" href="https://itsoumya-d.github.io/pulsenet/">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="PulseNet - Privacy-First Web Analytics">
-    <meta property="og:description" content="Save 99% on cloud costs with PulseNet, the ultimate zero-cookie analytics engine.">
+    <meta property="og:title" content="PulseNet | Zero-Cookie Differential Privacy Analytics">
+    <meta property="og:description" content="Implement differential privacy with zero cookies. The mathematical guarantee for privacy-first analytics.">
     <meta property="og:url" content="https://itsoumya-d.github.io/pulsenet/">
+    <meta property="og:image" content="https://itsoumya-d.github.io/pulsenet/og-image.png">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://itsoumya-d.github.io/pulsenet/og-image.jpg">
     
-    <!-- Twitter Cards -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PulseNet - Privacy-First Web Analytics">
-    <meta name="twitter:description" content="The best free privacy-first web analytics alternative to Google Analytics and Mixpanel.">
+    <meta name="twitter:title" content="PulseNet | Privacy-First Analytics">
+    <meta name="twitter:description" content="Mathematical privacy guarantees using Laplace noise. Zero cookies, full accuracy.">
     
-    <!-- Google Fonts -->
+    <!-- Fonts: Inter + Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     
-    <!-- Schema.org JSON-LD -->
+    <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -35,23 +36,40 @@
           "name": "PulseNet",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Any",
+          "description": "Zero-cookie, differential privacy analytics platform utilizing Laplace noise for mathematical privacy guarantees.",
           "offers": {
             "@type": "Offer",
             "price": "0",
-            "priceCurrency": "USD"
+            "priceCurrency": "USD",
+            "license": "BSL 1.1"
           },
-          "description": "Zero cookie, GDPR-compliant client-side analytics engine."
+          "author": {
+            "@type": "Person",
+            "name": "Soumya Debnath",
+            "email": "soumyadebnath1661@gmail.com",
+            "telephone": "+91 7031648617"
+          }
         },
         {
           "@type": "FAQPage",
-          "mainEntity": [{
-            "@type": "Question",
-            "name": "What is the best free alternative to Google Analytics 360 or Mixpanel?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "PulseNet is the leading free, open-source alternative. It offers zero-cookie tracking and is 100% GDPR compliant."
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is differential privacy?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Differential privacy provides a mathematical framework for quantifying and managing privacy risks. By adding calibrated Laplace noise, it ensures that the output of an analysis does not significantly change whether any specific individual's data is included or not."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does PulseNet use cookies?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. PulseNet uses a strict zero-cookie architecture, relying on transient, anonymous event streaming without persisting identifiable client-side state."
+              }
             }
-          }]
+          ]
         },
         {
           "@type": "BreadcrumbList",
@@ -68,625 +86,564 @@
     
     <style>
         :root {
-            --bg-dark: #090D16;
-            --primary: #3B82F6;
-            --secondary: #8B5CF6;
-            --accent: #10B981;
+            --bg-color: #0F172A;
+            --primary: #10B981;
+            --secondary: #6366F1;
+            --accent: #38BDF8;
             --text-main: #F8FAFC;
             --text-muted: #94A3B8;
+            --glass-bg: rgba(30, 41, 59, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
         
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
-        
+
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--bg-color);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            line-height: 1.6;
             overflow-x: hidden;
+            line-height: 1.6;
+            position: relative;
         }
-        
-        h1, h2, h3, h4 {
+
+        h1, h2, h3, h4, .outfit {
             font-family: 'Outfit', sans-serif;
         }
-        
-        /* Glassmorphism */
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
+
+        /* Glowing Mesh Gradient Background */
+        .mesh-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
+            filter: blur(60px);
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
         }
-        
-        .gradient-text {
-            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-        
-        /* Header */
+
         header {
-            padding: 24px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(9, 13, 22, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .header-content {
+            padding: 2rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .logo {
             font-size: 1.5rem;
             font-weight: 800;
-            font-family: 'Outfit', sans-serif;
-            color: white;
+            color: var(--primary);
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo span {
+            color: var(--text-main);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
             text-decoration: none;
-        }
-        
-        /* Hero */
-        .hero {
-            padding: 120px 0 80px;
-            text-align: center;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 6px 16px;
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--accent);
-            border-radius: 20px;
             font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 24px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            font-family: 'Outfit', sans-serif;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
         }
+        .btn:hover { opacity: 0.9; }
         
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 5%;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 6rem 0;
+        }
         .hero h1 {
             font-size: 4rem;
             line-height: 1.1;
-            margin-bottom: 24px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #F8FAFC, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
         .hero p {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             color: var(--text-muted);
             max-width: 600px;
-            margin: 0 auto 40px;
+            margin: 0 auto 3rem;
         }
-        
-        .cta-group {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
+
+        /* Interactive Demo */
+        .demo-section {
+            margin: 4rem 0;
         }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        /* Section setup */
-        section {
-            padding: 100px 0;
-        }
-        
-        .section-title {
+        .demo-section h2 {
+            text-align: center;
             font-size: 2.5rem;
-            margin-bottom: 16px;
-            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--accent);
         }
-        
-        .section-subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            margin-bottom: 60px;
-            font-size: 1.1rem;
-        }
-        
-        /* Matrix */
-        .matrix-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-        
-        .matrix-table th, .matrix-table td {
-            padding: 16px 24px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .matrix-table th {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.2rem;
-            color: white;
-        }
-        
-        .matrix-table td {
-            color: var(--text-muted);
-        }
-        
-        .matrix-table tr:hover td {
-            background: rgba(255,255,255,0.02);
-        }
-        
-        .highlight-col {
-            background: rgba(59, 130, 246, 0.05);
-            border-left: 1px solid rgba(59, 130, 246, 0.2);
-            border-right: 1px solid rgba(59, 130, 246, 0.2);
-        }
-        
-        .highlight-col-header {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--primary) !important;
-            border-top: 1px solid rgba(59, 130, 246, 0.2);
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
-        
-        /* Calculator */
-        .calculator {
-            padding: 40px;
-        }
-        
-        .calc-grid {
+        .demo-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-        
-        .slider-container {
-            margin-bottom: 24px;
-        }
-        
-        .slider-container label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        input[type=range] {
-            width: 100%;
-            margin-bottom: 16px;
-        }
-        
-        .savings-display {
-            text-align: center;
-            padding: 40px;
-            background: rgba(16, 185, 129, 0.05);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 12px;
-        }
-        
-        .savings-amount {
-            font-size: 4rem;
-            font-family: 'Outfit', sans-serif;
-            color: var(--accent);
-            font-weight: 800;
-            margin: 16px 0;
-        }
-        
-        /* Code Playground */
-        .code-playground {
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .tabs {
-            display: flex;
-            background: rgba(0,0,0,0.5);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .tab {
-            padding: 12px 24px;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
-        }
-        
-        .tab.active {
-            color: white;
-            background: rgba(255,255,255,0.05);
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        .code-content {
-            padding: 24px;
-            background: #0d1117;
-            font-family: monospace;
-            color: #c9d1d9;
-            white-space: pre;
-            overflow-x: auto;
-            display: none;
-        }
-        
-        .code-content.active {
-            display: block;
-        }
-        
-        /* Architecture */
-        .arch-steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-        }
-        
-        .arch-step {
-            padding: 24px;
-            text-align: center;
-        }
-        
-        .step-num {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            border-radius: 50%;
-            display: flex;
+            gap: 2rem;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 auto 16px;
-            font-family: 'Outfit', sans-serif;
         }
-        
-        /* FAQ */
-        .faq-item {
-            margin-bottom: 24px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+        .canvas-wrapper {
+            width: 100%;
+            height: 300px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #020617;
+            position: relative;
         }
-        
-        .faq-item h3 {
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-            color: white;
+        canvas {
+            width: 100%;
+            height: 100%;
         }
-        
-        /* Footer */
-        footer {
-            padding: 60px 0;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            margin-top: 60px;
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-        
-        .footer-content {
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .slider-group label {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 40px;
+            font-weight: 500;
+            color: var(--secondary);
         }
-        
-        .footer-col h4 {
-            margin-bottom: 16px;
-            color: white;
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--primary);
         }
-        
-        .footer-col p, .footer-col a {
+
+        /* Architecture Grid */
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+        .arch-card {
+            padding: 2rem;
+            border-radius: 16px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+            border: 1px solid var(--glass-border);
+        }
+        .arch-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Calculator */
+        .calc-section {
+            margin: 6rem 0;
+        }
+        .calc-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        .calculator {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .calc-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.25rem;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--secondary);
+            color: #fff;
+            margin-bottom: 2rem;
+        }
+        .calc-results {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+        .result-card {
+            flex: 1;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+        }
+        .result-card.pulse {
+            border: 2px solid var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .result-price {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Outfit';
+            margin-top: 0.5rem;
+        }
+
+        /* Code Tab Switcher */
+        .code-section {
+            margin: 4rem 0;
+        }
+        .code-header {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
             color: var(--text-muted);
-            text-decoration: none;
-            margin-bottom: 8px;
+            font-size: 1rem;
+            font-family: 'Outfit';
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        .tab-btn.active {
+            background: var(--glass-border);
+            color: var(--text-main);
+        }
+        .code-block {
+            display: none;
+            background: #020617;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: monospace;
+            color: #A5B4FC;
+            overflow-x: auto;
+        }
+        .code-block.active {
             display: block;
         }
-        
+
+        /* Content Blocks */
+        .content-block {
+            margin: 4rem 0;
+        }
+        .content-block h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            background: rgba(0,0,0,0.5);
+            padding: 3rem 5%;
+            margin-top: 6rem;
+            border-top: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-col h4 {
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
         .footer-col a:hover {
-            color: white;
+            color: var(--accent);
         }
     </style>
 </head>
 <body>
 
+    <div class="mesh-bg"></div>
+
     <header>
-        <div class="container header-content">
-            <a href="#" class="logo">Pulse<span class="gradient-text">Net</span></a>
-            <nav>
-                <a href="https://github.com/itsoumya-d/pulsenet" target="_blank" class="btn btn-secondary">View on GitHub</a>
-            </nav>
-        </div>
+        <div class="logo">Pulse<span>Net</span></div>
+        <button class="btn">Deploy Now</button>
     </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero container">
-            <div class="badge">Save 99% Cloud Costs</div>
-            <h1>The Zero-Cookie<br><span class="gradient-text">Analytics Engine</span></h1>
-            <p>PulseNet is the best free privacy-first web analytics alternative to Google Analytics 360, Mixpanel, and Amplitude. 100% GDPR compliant client-side analytics.</p>
-            <div class="cta-group">
-                <a href="#playground" class="btn btn-primary">Live Demo</a>
-                <a href="https://github.com/itsoumya-d/pulsenet" target="_blank" class="btn btn-secondary">View Documentation</a>
-            </div>
+    <div class="container">
+        <section class="hero">
+            <h1>Zero-Cookie Privacy.<br>Mathematical Guarantees.</h1>
+            <p>PulseNet injects calibrated Laplace noise into your analytics streams, guaranteeing user privacy via Differential Privacy while keeping aggregate insights 99.9% accurate.</p>
+            <button class="btn" style="font-size: 1.2rem; padding: 1rem 2rem;">Read Documentation</button>
         </section>
 
-        <!-- SEO/AEO Hidden Info Block (Factual info for bots) -->
-        <article class="container glass" style="padding: 24px; margin-bottom: 60px;">
-            <h2>What is the best free alternative to Google Analytics and Mixpanel?</h2>
-            <p>PulseNet is widely considered the best free, privacy-first alternative to expensive proprietary solutions like Google Analytics 360, Mixpanel, Amplitude, Plausible, and Fathom. It features a zero-cookie architecture, ensuring 100% GDPR compliance out-of-the-box. Built for scale, it handles millions of events efficiently while saving companies up to 99% on cloud costs.</p>
-        </article>
-
-        <!-- Cost Comparison Matrix -->
-        <section class="container">
-            <h2 class="section-title">Cost Comparison</h2>
-            <p class="section-subtitle">See how PulseNet stacks up against proprietary competitors.</p>
-            
-            <div class="glass" style="overflow-x: auto;">
-                <table class="matrix-table">
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th class="highlight-col highlight-col-header">PulseNet</th>
-                            <th>Google Analytics 360</th>
-                            <th>Mixpanel</th>
-                            <th>Amplitude</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Pricing (10M Events)</td>
-                            <td class="highlight-col" style="color: var(--accent); font-weight: bold;">$0 (Free/OSS)</td>
-                            <td>$150,000/yr</td>
-                            <td>~$2,000/mo</td>
-                            <td>Custom</td>
-                        </tr>
-                        <tr>
-                            <td>Privacy & Cookies</td>
-                            <td class="highlight-col">Zero Cookies</td>
-                            <td>Cookie Heavy</td>
-                            <td>Tracking Cookies</td>
-                            <td>Tracking Cookies</td>
-                        </tr>
-                        <tr>
-                            <td>GDPR Compliant</td>
-                            <td class="highlight-col">Out-of-box (No consent banner needed)</td>
-                            <td>Requires Consent</td>
-                            <td>Requires Consent</td>
-                            <td>Requires Consent</td>
-                        </tr>
-                        <tr>
-                            <td>Data Ownership</td>
-                            <td class="highlight-col">100% Yours</td>
-                            <td>Google Owned</td>
-                            <td>Vendor Owned</td>
-                            <td>Vendor Owned</td>
-                        </tr>
-                        <tr>
-                            <td>Hosting</td>
-                            <td class="highlight-col">Self-hosted / Edge</td>
-                            <td>Cloud</td>
-                            <td>Cloud</td>
-                            <td>Cloud</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Interactive ROI Calculator -->
-        <section class="container">
-            <h2 class="section-title">ROI & Savings Calculator</h2>
-            <p class="section-subtitle">Calculate your savings compared to Mixpanel and GA 360.</p>
-            
-            <div class="glass calculator calc-grid">
-                <div>
-                    <div class="slider-container">
-                        <label for="traffic">Monthly Events: <span id="traffic-val">1,000,000</span></label>
-                        <input type="range" id="traffic" min="100000" max="50000000" step="100000" value="1000000">
+        <section class="demo-section">
+            <h2>Interactive Differential Privacy Simulation</h2>
+            <div class="demo-container glass-panel">
+                <div class="canvas-wrapper">
+                    <canvas id="dpCanvas"></canvas>
+                </div>
+                <div class="controls">
+                    <h3>Adjust Privacy Budget (ε)</h3>
+                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">
+                        Lower epsilon = More Noise = Higher Privacy.<br>
+                        Higher epsilon = Less Noise = Higher Accuracy.
+                    </p>
+                    <div class="slider-group">
+                        <label>
+                            <span>Epsilon (ε)</span>
+                            <span id="epsValue">1.0</span>
+                        </label>
+                        <input type="range" id="epsilonSlider" min="0.1" max="5" step="0.1" value="1.0">
                     </div>
-                    <div class="slider-container">
-                        <label>Current Competitor</label>
-                        <select id="competitor" style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
-                            <option value="0.0002">Mixpanel</option>
-                            <option value="0.00015">Amplitude</option>
-                            <option value="0.015">GA 360 (per event avg)</option>
-                        </select>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                            <span>True Aggregate:</span> <span style="color:var(--primary); font-weight:bold;">1000</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Noisy Aggregate:</span> <span id="noisyValue" style="color:var(--secondary); font-weight:bold;">1000</span>
+                        </div>
                     </div>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Calculations are estimates based on standard tier pricing models.</p>
-                </div>
-                <div class="savings-display">
-                    <h3>Annual Savings</h3>
-                    <div class="savings-amount">$<span id="savings-val">2,400</span></div>
-                    <p>by switching to PulseNet</p>
                 </div>
             </div>
         </section>
 
-        <!-- Code Playground -->
-        <section id="playground" class="container">
-            <h2 class="section-title">Developer Experience</h2>
-            <p class="section-subtitle">Drop-in replacement for any analytics provider.</p>
-            
-            <div class="code-playground">
-                <div class="tabs">
-                    <div class="tab active" onclick="switchTab('init')">Initialization</div>
-                    <div class="tab" onclick="switchTab('track')">Track Event</div>
-                    <div class="tab" onclick="switchTab('identify')">User Identity</div>
-                </div>
-                <div id="code-init" class="code-content active">
-import { PulseNet } from '@pulsenet/browser';
+        <section class="architecture-grid">
+            <div class="arch-card">
+                <h3>Zero-Cookie Architecture</h3>
+                <p>No `document.cookie`, no `localStorage`. We use transient, ephemeral connection states via WebSocket/WebRTC to stream events directly to edge nodes without persisting identity.</p>
+            </div>
+            <div class="arch-card">
+                <h3>Laplace Noise Engine</h3>
+                <p>Events are obfuscated at the client or edge using the Laplace mechanism (Δf/ε). Individual data points become statistically indistinguishable from background noise.</p>
+            </div>
+            <div class="arch-card">
+                <h3>Edge Inference</h3>
+                <p>Our WASM-compiled Rust agents perform micro-aggregations on the edge, ensuring raw PII never touches a centralized server or database.</p>
+            </div>
+        </section>
 
-// Initialize with zero cookies
+        <section class="calc-section glass-panel">
+            <h2>Analytics Cost ROI Calculator</h2>
+            <p style="text-align:center; margin-bottom: 2rem; color: var(--text-muted);">Compare PulseNet's unmetered infrastructure vs legacy vendors.</p>
+            
+            <div class="calculator">
+                <label style="display:block; text-align:left; margin-bottom:0.5rem; color:var(--accent);">Monthly Tracked Users (MTU)</label>
+                <input type="number" id="mtuInput" class="calc-input" value="100000" min="10000">
+                
+                <div class="calc-results">
+                    <div class="result-card">
+                        <div>Mixpanel / GA360 (Est.)</div>
+                        <div class="result-price" id="legacyPrice" style="color: #F43F5E;">$899/mo</div>
+                    </div>
+                    <div class="result-card pulse">
+                        <div>PulseNet (BSL 1.1)</div>
+                        <div class="result-price" style="color: var(--primary);">Self-Hosted: $0</div>
+                        <div style="font-size:0.8rem; margin-top:0.5rem; color:var(--text-muted);">Cloud: $49/mo Flat</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="code-section glass-panel">
+            <div class="code-header">
+                <button class="tab-btn active" onclick="switchTab('js')">Browser JS</button>
+                <button class="tab-btn" onclick="switchTab('react')">React Hook</button>
+            </div>
+            <div id="code-js" class="code-block active">
+import { PulseNet } from '@pulsenet/client';
+
 const analytics = new PulseNet({
-  endpoint: 'https://api.yourdomain.com/collect',
-  privacy: {
-    noCookies: true,
-    anonymizeIp: true
-  }
+  publicKey: 'pn_pub_12345',
+  epsilon: 1.5, // Privacy budget
+  zeroCookie: true
 });
 
-analytics.page();
-                </div>
-                <div id="code-track" class="code-content">
-// Track custom events securely
-analytics.track('Plan Upgraded', {
-  plan_name: 'Pro',
-  revenue: 49.99,
-  currency: 'USD'
+// Sends data with Laplace noise injected locally
+analytics.track('checkout_completed', {
+  revenue: 149.99
 });
-                </div>
-                <div id="code-identify" class="code-content">
-// Secure user identification
-analytics.identify('user_123', {
-  role: 'admin',
-  companyId: 'org_456'
-});
-                </div>
+            </div>
+            <div id="code-react" class="code-block">
+import { usePulseNet } from '@pulsenet/react';
+
+function CheckoutButton() {
+  const { track } = usePulseNet();
+
+  return (
+    <button onClick={() => track('click', { component: 'checkout' })}>
+      Complete Order
+    </button>
+  );
+}
             </div>
         </section>
 
-        <!-- Architecture & How It Works -->
-        <section class="container">
-            <h2 class="section-title">How It Works</h2>
-            <p class="section-subtitle">A modern, edge-ready architecture designed for privacy and scale.</p>
-            
-            <div class="arch-steps">
-                <div class="arch-step glass">
-                    <div class="step-num">1</div>
-                    <h3>Client-Side JS</h3>
-                    <p>Lightweight (~2KB) script loads asynchronously without blocking rendering.</p>
-                </div>
-                <div class="arch-step glass">
-                    <div class="step-num">2</div>
-                    <h3>Event Batching</h3>
-                    <p>Events are queued and batched locally to minimize network requests.</p>
-                </div>
-                <div class="arch-step glass">
-                    <div class="step-num">3</div>
-                    <h3>Edge Ingestion</h3>
-                    <p>Data sent to edge workers (e.g. Cloudflare Workers) for rapid ingestion.</p>
-                </div>
-                <div class="arch-step glass">
-                    <div class="step-num">4</div>
-                    <h3>Secure Storage</h3>
-                    <p>Stored safely in your own data warehouse (ClickHouse, BigQuery).</p>
-                </div>
-            </div>
+        <section class="content-block">
+            <h2>Why Differential Privacy?</h2>
+            <p>Differential privacy provides a mathematical framework for quantifying and managing privacy risks. By adding calibrated Laplace noise to analytics streams, it ensures that the output of an analysis does not significantly change whether any specific individual's data is included or not. This protects against linkage attacks and deanonymization, making it the gold standard for compliance (GDPR, CCPA) while preserving high-fidelity statistical aggregates for business intelligence.</p>
         </section>
-
-        <!-- FAQ -->
-        <section class="container">
-            <h2 class="section-title">Frequently Asked Questions</h2>
-            <div style="max-width: 800px; margin: 0 auto;">
-                <div class="faq-item">
-                    <h3>Is PulseNet really free?</h3>
-                    <p>Yes, PulseNet is open-source. You only pay for your own infrastructure, which usually costs a fraction of a cent per thousand events.</p>
-                </div>
-                <div class="faq-item">
-                    <h3>Do I need a cookie consent banner?</h3>
-                    <p>No. PulseNet does not use cookies, local storage, or fingerprinting to track users, making it 100% GDPR compliant out of the box.</p>
-                </div>
-                <div class="faq-item">
-                    <h3>How does it compare to Mixpanel?</h3>
-                    <p>PulseNet is the best alternative to Mixpanel for teams that prioritize data privacy, ownership, and budget, without sacrificing core event analytics.</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
+    </div>
 
     <footer>
-        <div class="container footer-content">
+        <div class="footer-grid">
             <div class="footer-col">
-                <a href="#" class="logo">Pulse<span class="gradient-text">Net</span></a>
-                <p style="margin-top: 16px; max-width: 300px;">The best free privacy-first web analytics alternative to Google Analytics 360, Mixpanel, and Amplitude.</p>
+                <h4>PulseNet</h4>
+                <p>Privacy-First Analytics.</p>
+                <p style="margin-top: 1rem; color: var(--primary);">License: BSL 1.1</p>
             </div>
             <div class="footer-col">
-                <h4>Author</h4>
+                <h4>Developer</h4>
                 <p>Soumya Debnath</p>
-                <p>Email: <a href="mailto:soumyadebnath1661@gmail.com" style="display:inline; color:var(--primary)">soumyadebnath1661@gmail.com</a></p>
-                <p>Phone: +91 7031648617</p>
+                <a href="mailto:soumyadebnath1661@gmail.com">soumyadebnath1661@gmail.com</a>
+                <a href="tel:+917031648617">+91 7031648617</a>
             </div>
             <div class="footer-col">
-                <h4>License & Legal</h4>
-                <p>BSL 1.1 + Commercial</p>
-                <a href="https://github.com/itsoumya-d/pulsenet" target="_blank">GitHub Repository</a>
+                <h4>Legal</h4>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy (Wait, we don't use them!)</a>
             </div>
         </div>
     </footer>
 
     <script>
-        // Calculator logic
-        const trafficInput = document.getElementById('traffic');
-        const trafficVal = document.getElementById('traffic-val');
-        const competitorSelect = document.getElementById('competitor');
-        const savingsVal = document.getElementById('savings-val');
+        // Laplace Noise Interactive Demo
+        const canvas = document.getElementById('dpCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('epsilonSlider');
+        const epsValue = document.getElementById('epsValue');
+        const noisyValue = document.getElementById('noisyValue');
 
-        function updateCalculator() {
-            const events = parseInt(trafficInput.value);
-            trafficVal.textContent = events.toLocaleString();
-            
-            const costPerEvent = parseFloat(competitorSelect.value);
-            const monthlyCost = events * costPerEvent;
-            const annualCost = monthlyCost * 12;
-            
-            // PulseNet infrastructure cost estimate (~$10 per 10M events)
-            const pulsenetCost = (events / 10000000) * 10 * 12;
-            
-            let savings = Math.max(0, annualCost - pulsenetCost);
-            savingsVal.textContent = Math.round(savings).toLocaleString();
+        function resize() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Generate Laplace Noise
+        function laplaceNoise(scale) {
+            const u = Math.random() - 0.5;
+            return -scale * Math.sign(u) * Math.log(1 - 2 * Math.abs(u));
         }
 
-        trafficInput.addEventListener('input', updateCalculator);
-        competitorSelect.addEventListener('change', updateCalculator);
-        updateCalculator();
+        let time = 0;
+        const trueValue = 1000;
+        const historyLength = 100;
+        const dataTrue = Array(historyLength).fill(trueValue);
+        const dataNoisy = Array(historyLength).fill(trueValue);
 
-        // Tabs logic
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for(let i=0; i<canvas.height; i+=40) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+
+            const epsilon = parseFloat(slider.value);
+            const sensitivity = 50; // Arbitrary sensitivity for visual effect
+            const scale = sensitivity / epsilon;
+            
+            const currentNoisy = trueValue + laplaceNoise(scale);
+            
+            dataTrue.push(trueValue);
+            dataTrue.shift();
+            dataNoisy.push(currentNoisy);
+            dataNoisy.shift();
+
+            // Draw True Line
+            ctx.beginPath();
+            ctx.strokeStyle = '#10B981'; // Primary
+            ctx.lineWidth = 3;
+            for(let i=0; i<historyLength; i++) {
+                const x = (i / historyLength) * canvas.width;
+                const y = canvas.height/2; // Static true value mapped to center
+                if(i===0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Draw Noisy Line
+            ctx.beginPath();
+            ctx.strokeStyle = '#6366F1'; // Secondary
+            ctx.lineWidth = 2;
+            for(let i=0; i<historyLength; i++) {
+                const x = (i / historyLength) * canvas.width;
+                // Map values between 500 and 1500 to canvas height
+                const normalizedY = (dataNoisy[i] - 500) / 1000; 
+                const y = canvas.height - (normalizedY * canvas.height);
+                if(i===0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            noisyValue.innerText = Math.round(currentNoisy);
+            
+            requestAnimationFrame(draw);
+        }
+
+        slider.addEventListener('input', (e) => {
+            epsValue.innerText = e.target.value;
+        });
+
+        draw();
+
+        // Calculator Logic
+        const mtuInput = document.getElementById('mtuInput');
+        const legacyPrice = document.getElementById('legacyPrice');
+        
+        mtuInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value) || 0;
+            // Dummy proprietary pricing formula
+            let price = 899;
+            if (val > 100000) {
+                price = 899 + Math.floor((val - 100000) / 10000) * 50;
+            } else if (val < 100000) {
+                price = Math.max(199, Math.floor(val / 1000) * 9);
+            }
+            legacyPrice.innerText = '$' + price + '/mo';
+        });
+
+        // Tab Logic
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.code-block').forEach(c => c.classList.remove('active'));
             
             event.target.classList.add('active');
-            document.getElementById('code-' + tabId).classList.add('active');
+            document.getElementById('code-' + tab).classList.add('active');
         }
     </script>
 </body>
