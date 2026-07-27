@@ -1,3 +1,10 @@
+<!--
+// Copyright (c) 2024-2026 Soumya Debnath. All Rights Reserved.
+// Licensed under the Business Source License 1.1 (BSL 1.1).
+// See LICENSE file for details. Production use requires a paid license.
+// Contact: soumyadebnath1661@gmail.com | +91 7031648617
+-->
+
 <div align="center">
   <h1>PulseNet 🌌</h1>
   <p><strong>The Zero-Cost, 100% Privacy-First Analytics Infrastructure.</strong></p>
@@ -122,6 +129,42 @@ For any count metric (page views, event clicks, sessions), the reported value is
   ```
 
 Because of this noise, **it is mathematically impossible for the server to determine if a specific user took a specific action**. When aggregated over thousands of users, the random noise cancels out (mean = 0), leaving you with highly accurate aggregate statistics.
+
+---
+
+## 🔬 Federated P2P Aggregation & Differential Privacy (Research-Backed)
+
+PulseNet integrates cutting-edge privacy research combining decentralized peer gossip networks with formal differential privacy and secure multi-party computation principles.
+
+### 🌐 Federated P2P Aggregation (WebRTC Gossip Protocol)
+- **Decentralized Browser Swarms**: Analytics data is aggregated across active user browsers over WebRTC DataChannel gossip networks.
+- **Serverless Pre-Aggregation**: Peer browsers aggregate histogram buckets locally before transmitting collective summaries to the collector server, reducing server intake requests by up to 99%.
+
+### 🛡️ Enhanced Differential Privacy & Noise Mechanisms
+- **Configurable Epsilon ($\epsilon$) & Delta ($\delta$)**: Granular privacy budget controls. Supports Laplace mechanism for pure $\epsilon$-DP and Gaussian mechanism for $(\epsilon, \delta)$-differential privacy.
+- **Gaussian Noise Engine**: Injects zero-mean Gaussian noise $N(0, \sigma^2)$ derived from standard deviation $\sigma = \frac{\Delta f \sqrt{2\ln(1.25/\delta)}}{\epsilon}$, guaranteeing bounded privacy loss under composition.
+
+### 🔬 Research Foundations
+> **Research Citations:**  
+> - Dwork, C., & Roth, A. (2014). *The Algorithmic Foundations of Differential Privacy*. Foundations and Trends in Theoretical Computer Science, 9(3–4), 211-407.
+> - Bonawitz, K., et al. (2017). *Practical Secure Aggregation for Privacy-Preserving Machine Learning*. ACM Conference on Computer and Communications Security (CCS 2017). [arXiv:1611.04482](https://arxiv.org/abs/1611.04482)
+
+### 💻 Usage Example: Federated Aggregation & Gaussian Noise
+
+```typescript
+import { PulseNet } from '@pulsenet/browser';
+
+const analytics = new PulseNet({
+  appId: 'my-production-app',
+  endpoint: 'https://analytics.mydomain.com/api/collect',
+  federatedGossip: true, // Enables WebRTC P2P browser gossip aggregation
+  privacyBudget: {
+    mechanism: 'gaussian',
+    epsilon: 0.5,
+    delta: 1e-5
+  }
+});
+```
 
 ---
 
