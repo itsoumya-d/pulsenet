@@ -51,9 +51,32 @@ export class FederatedAggregator {
   }
 
   public connect(signalingUrl: string, channelId: string) {
-    // In a real implementation this connects to WebRTC signaling server, sets up peers.
-    // Here we'll simulate an empty connect wrapper for P2P setup.
-    console.log(`Connecting to signaling ${signalingUrl} on channel ${channelId}`);
+    if (typeof WebSocket === 'undefined') {
+      console.warn('PulseNet: WebSocket not available, P2P aggregation disabled');
+      return;
+    }
+    const ws = new WebSocket(signalingUrl);
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'join', channelId }));
+    };
+    ws.onmessage = async (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'peer_channel') {
+          // Peer channels are added externally via addPeer()
+          // This is a signal that a peer is available
+          this.eventTarget.dispatchEvent(new CustomEvent('peerAvailable', { detail: msg.peerId }));
+        }
+      } catch {}
+    };
+    ws.onclose = () => {
+      // Auto-reconnect after 5 seconds
+      setTimeout(() => this.connect(signalingUrl, channelId), 5000);
+    };
+  }
+
+  public onPeerAvailable(callback: (peerId: string) => void) {
+    this.eventTarget.addEventListener('peerAvailable', ((e: CustomEvent) => callback(e.detail)) as EventListener);
   }
 
   public shareLocalAggregates(epsilon: number = 1.0, sensitivity: number = 1.0) {
