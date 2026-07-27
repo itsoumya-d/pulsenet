@@ -116,7 +116,7 @@ export class FederatedAggregator {
     this.globalAggregate.avgTiming = 
       ((this.globalAggregate.avgTiming * this.contributorCount) + (remote.avgTiming * remoteCount)) / totalCount;
 
-    this.contributorCount = totalCount;
+    this.contributorCount = Math.min(totalCount, 100);
     this.eventTarget.dispatchEvent(new Event('aggregateUpdated'));
   }
 

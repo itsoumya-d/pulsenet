@@ -17,6 +17,8 @@ export class PulseNet {
   private transport: TransportLayer;
   private timer: any;
   private enabled: boolean = true;
+  private boundVisibilityHandler = () => { if (document.visibilityState === 'hidden') this.flush(); };
+  private boundPagehideHandler = () => { const stats = this.sessionTracker.getSessionStats(); this.aggregator.recordSession(stats.durationSec, stats.pageCount); this.flush(); };
 
   constructor(options?: any) {
     LicenseValidator.validate(options);
@@ -29,17 +31,8 @@ export class PulseNet {
     if (typeof window !== 'undefined') {
       this.timer = setInterval(() => this.flush(), this.options.flushInterval);
       
-      window.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          this.flush();
-        }
-      });
-      
-      window.addEventListener('pagehide', () => {
-        const stats = this.sessionTracker.getSessionStats();
-        this.aggregator.recordSession(stats.durationSec, stats.pageCount);
-        this.flush();
-      });
+      window.addEventListener('visibilitychange', this.boundVisibilityHandler);
+      window.addEventListener('pagehide', this.boundPagehideHandler);
 
       setupAutoTrack(this);
       this.pageView(); // track initial page load
@@ -80,12 +73,20 @@ export class PulseNet {
         Object.keys(payload.events).length > 0 || 
         payload.sessions.count > 0) {
       if (this.options.debug) console.log('[PulseNet] Flushing payload', payload);
-      await this.transport.send(payload);
+      try {
+        await this.transport.send(payload);
+      } catch (err) {
+        if (this.options.debug) console.warn('[PulseNet] Flush failed', err);
+      }
     }
   }
 
   destroy() {
     if (this.timer) clearInterval(this.timer);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('visibilitychange', this.boundVisibilityHandler);
+      window.removeEventListener('pagehide', this.boundPagehideHandler);
+    }
     this.flush();
   }
 }
