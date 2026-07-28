@@ -523,6 +523,119 @@
             color: #64748B;
         }
 
+        /* Enhancements UI Components */
+        .compliance-badge-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 16px;
+            padding: var(--space-32);
+            max-width: 600px;
+            margin: var(--space-48) auto 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .compliance-badge-title {
+            color: var(--primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: var(--text-20);
+            font-weight: 700;
+            margin-bottom: var(--space-16);
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 250px;
+            margin-top: var(--space-32);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: var(--space-8);
+        }
+        .bar {
+            width: 44px;
+            background: var(--tertiary);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s ease;
+            position: relative;
+        }
+        .bar span {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .svg-chart-container {
+            max-width: 800px;
+            margin: var(--space-64) auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: var(--space-32);
+        }
+        .chart-path {
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+        }
+        .chart-fill {
+            opacity: 0;
+            transition: opacity 1s ease 1s;
+        }
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #64748B;
+        }
+
+        .p2p-map {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: var(--space-48) auto;
+        }
+        .p2p-node {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            font-size: 20px;
+        }
+        .p2p-node.central {
+            width: 64px;
+            height: 64px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .p2p-lines {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+        .p2p-line {
+            stroke: var(--secondary);
+            stroke-width: 2;
+            stroke-dasharray: 6;
+            animation: dashPulse 20s linear infinite;
+        }
+        @keyframes dashPulse {
+            to { stroke-dashoffset: -400; }
+        }
+
         @media (max-width: 768px) {
             section { padding: 80px 0; }
             h1 { font-size: var(--text-48); }
@@ -561,6 +674,10 @@
             <h1 class="hero-title">Analytics without surveillance.<br>Zero cookies. Zero PII.</h1>
             <p class="hero-desc">Discover actionable insights without compromising user trust. The ultimate privacy-first platform built on differential privacy.</p>
             <button class="btn btn-primary hero-btn">Deploy PulseNet Today</button>
+            <div class="compliance-badge-card">
+                <div class="compliance-badge-title">✅ ZERO COOKIES • ZERO TRACKING • 100% GDPR COMPLIANT</div>
+                <p style="font-size: 14px; color: var(--text-body);">No consent banners needed. No cookie walls. No data leaves the browser.</p>
+            </div>
         </div>
     </section>
 
@@ -568,16 +685,40 @@
         <div class="container">
             <div class="metrics-grid">
                 <div class="metric-card gs-reveal">
-                    <div class="metric-value" data-val="0">0</div>
+                    <div class="metric-value" data-val="1200000" data-format="m">0</div>
+                    <p>Page Views Tracked</p>
+                </div>
+                <div class="metric-card gs-reveal">
+                    <div class="metric-value" style="color: var(--primary);" data-val="0">0</div>
                     <p>Cookies Used</p>
                 </div>
                 <div class="metric-card gs-reveal">
-                    <div class="metric-value" data-val="100">0</div>
-                    <p>% GDPR Compliant</p>
+                    <div class="metric-value" style="display:inline-block;" data-val="0" data-prefix="$">0</div><span class="metric-value">/mo</span>
+                    <p>vs GA360: $150,000/yr</p>
                 </div>
-                <div class="metric-card gs-reveal">
-                    <div class="metric-value" style="display:inline-block;" data-val="1">0</div><span class="metric-value">KB</span>
-                    <p>Script Size</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="dashboard">
+        <div class="container">
+            <div class="section-header gs-reveal">
+                <h2>Analytics Dashboard</h2>
+                <p>Beautiful, actionable insights right out of the box.</p>
+            </div>
+            <div class="svg-chart-container gs-reveal" id="area-chart">
+                <svg viewBox="0 0 800 300" style="width: 100%; height: auto; overflow: visible;">
+                    <defs>
+                        <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="var(--tertiary)" stop-opacity="0.5"/>
+                            <stop offset="100%" stop-color="var(--tertiary)" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path class="chart-fill" d="M0,300 L0,200 L133,150 L266,220 L400,100 L533,180 L666,80 L800,120 L800,300 Z" fill="url(#chartGradient)"/>
+                    <path class="chart-path" d="M0,200 L133,150 L266,220 L400,100 L533,180 L666,80 L800,120" fill="none" stroke="var(--tertiary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="chart-labels">
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
                 </div>
             </div>
         </div>
@@ -624,6 +765,23 @@
                 <h2>Differential Privacy Architecture</h2>
                 <p>How we guarantee anonymity.</p>
             </div>
+            
+            <div class="p2p-map gs-reveal">
+                <svg class="p2p-lines" viewBox="0 0 300 300">
+                    <line x1="150" y1="150" x2="150" y2="20" class="p2p-line"/>
+                    <line x1="150" y1="150" x2="273" y2="109" class="p2p-line"/>
+                    <line x1="150" y1="150" x2="226" y2="255" class="p2p-line"/>
+                    <line x1="150" y1="150" x2="74" y2="255" class="p2p-line"/>
+                    <line x1="150" y1="150" x2="27" y2="109" class="p2p-line"/>
+                </svg>
+                <div class="p2p-node central">🌐</div>
+                <div class="p2p-node edge" style="top: 0; left: 128px;">💻</div>
+                <div class="p2p-node edge" style="top: 87px; left: 251px;">📱</div>
+                <div class="p2p-node edge" style="top: 233px; left: 204px;">💻</div>
+                <div class="p2p-node edge" style="top: 233px; left: 52px;">📱</div>
+                <div class="p2p-node edge" style="top: 87px; left: 5px;">💻</div>
+            </div>
+            <p style="text-align: center; margin-bottom: var(--space-64); color: var(--tertiary);">Federated P2P Aggregation — no central server sees individual data</p>
             <div class="features-grid">
                 <div class="feature-card gs-reveal">
                     <h3>1. Collect</h3>
@@ -653,16 +811,18 @@
             </div>
             <div class="demo-box gs-reveal">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <h3>Privacy Level (Epsilon): <span id="epsilon-val" style="color: var(--primary);">1.0</span></h3>
-                    <div style="text-align: right;">
-                        <div style="font-size: 12px; color: #64748B;">Aggregate Accuracy</div>
-                        <div id="accuracy-val" style="font-weight: 700; color: #fff;">95%</div>
-                    </div>
+                    <h3>Privacy Budget (ε): <span id="epsilon-val" style="color: var(--primary);">0.1</span></h3>
                 </div>
                 <div class="slider-container">
-                    <input type="range" id="noise-slider" min="0.1" max="10" step="0.1" value="1.0">
+                    <input type="range" id="noise-slider" min="0.1" max="5.0" step="0.1" value="0.1">
                 </div>
-                <p style="font-size: 14px; color: #64748B;">Lower epsilon = higher privacy, more noise. Higher epsilon = lower privacy, less noise.</p>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #64748B;">
+                    <span>Lower ε = More Privacy, Less Accuracy</span>
+                    <span>Higher ε = Less Privacy, More Accuracy</span>
+                </div>
+                <div class="bar-chart" id="privacy-chart">
+                    <!-- Bars inserted by JS -->
+                </div>
             </div>
         </div>
     </section>
@@ -821,6 +981,11 @@
             { y: 20, opacity: 0 },
             { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
             "-=0.4"
+        )
+        .fromTo('.compliance-badge-card',
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+            "-=0.6"
         );
 
         // General Section Reveals
@@ -858,7 +1023,14 @@
                         duration: 2,
                         ease: "power3.out",
                         onUpdate: () => {
-                            el.innerText = Math.floor(obj.val);
+                            let val = Math.floor(obj.val);
+                            let format = el.getAttribute('data-format');
+                            let prefix = el.getAttribute('data-prefix') || '';
+                            
+                            if(format === 'm') {
+                                val = (val / 1000000).toFixed(1) + 'M';
+                            }
+                            el.innerText = prefix + val;
                         }
                     });
                 }
@@ -868,23 +1040,64 @@
         // Interactive Demo Logic
         const slider = document.getElementById('noise-slider');
         const epsVal = document.getElementById('epsilon-val');
-        const accVal = document.getElementById('accuracy-val');
+        const chart = document.getElementById('privacy-chart');
+        
+        const trueValues = [420, 380, 310, 275, 190];
+        
+        trueValues.forEach((val, i) => {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.id = `bar-${i}`;
+            const label = document.createElement('span');
+            label.id = `label-${i}`;
+            bar.appendChild(label);
+            chart.appendChild(bar);
+        });
 
-        slider.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value);
-            epsVal.innerText = val.toFixed(1);
+        function generateLaplaceNoise(epsilon) {
+            const u = Math.random() - 0.5;
+            const b = 1 / epsilon;
+            return -b * Math.sign(u) * Math.log(1 - 2 * Math.abs(u));
+        }
+
+        function updateChart(epsilon) {
+            epsVal.innerText = epsilon.toFixed(1);
             
-            // simple mock calculation for accuracy based on epsilon
-            // low eps -> low acc, high eps -> high acc
-            let acc = 60 + (val / 10) * 39; 
-            if(val === 10) acc = 99.9;
-            
-            accVal.innerText = acc.toFixed(1) + '%';
-            
-            // color update
-            const hue = 152; // roughly primary green
-            const lightness = Math.max(30, 80 - val * 3);
+            const hue = 152;
+            const lightness = Math.max(40, 80 - epsilon * 10);
             epsVal.style.color = `hsl(${hue}, 83%, ${lightness}%)`;
+
+            trueValues.forEach((val, i) => {
+                const noise = generateLaplaceNoise(epsilon) * 20;
+                let noisyVal = Math.max(0, val + noise);
+                
+                const bar = document.getElementById(`bar-${i}`);
+                const label = document.getElementById(`label-${i}`);
+                
+                const heightPx = Math.min(200, (noisyVal / 500) * 200);
+                bar.style.height = `${heightPx}px`;
+                label.innerText = Math.round(noisyVal);
+            });
+        }
+        
+        slider.addEventListener('input', (e) => {
+            updateChart(parseFloat(e.target.value));
+        });
+        
+        updateChart(0.1);
+
+        // SVG Chart Animation
+        ScrollTrigger.create({
+            trigger: "#area-chart",
+            start: "top 80%", once: true,
+            onEnter: () => {
+                gsap.to(".chart-path", {
+                    strokeDashoffset: 0,
+                    duration: 1.5,
+                    ease: "power2.inOut"
+                });
+                document.querySelector('.chart-fill').style.opacity = '1';
+            }
         });
         
         // Typewriter effect for code
