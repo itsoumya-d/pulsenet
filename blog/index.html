@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip</title>
+    <meta name="description" content="A deep dive into PulseNet's privacy-first analytics engine. Learn how we use Laplace noise, differential privacy budget decay, and WebRTC gossip aggregation to build a $0 cost Google Analytics alternative.">
+    <meta name="keywords" content="PulseNet, Differential Privacy, Laplace noise, WebRTC gossip, zero-cookie analytics, GDPR compliant, Google Analytics alternative, free Web Analytics">
+    
+    <meta property="og:title" content="PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip">
+    <meta property="og:description" content="A deep dive into PulseNet's privacy-first analytics engine. Learn how we use Laplace noise, differential privacy, and WebRTC gossip aggregation.">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip",
+      "description": "A deep dive into PulseNet's privacy-first analytics engine using Laplace noise, differential privacy budget decay, and WebRTC gossip aggregation.",
+      "author": {
+        "@type": "Person",
+        "name": "Soumya Debnath"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "PulseNet"
+      },
+      "datePublished": "2026-07-28"
+    }
+    </script>
+    
+    <style>
+        :root {
+            --bg-color: #0F172A;
+            --text-body: #CBD5E1;
+            --text-heading: #F1F5F9;
+            --primary: #10B981;
+            --secondary: #6366F1;
+            --tertiary: #38BDF8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --code-bg: #000;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-body);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-heading);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 { font-size: 3rem; line-height: 1.2; background: linear-gradient(to right, #F1F5F9, #94A3B8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.5rem; }
+
+        a { color: var(--tertiary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 100px 24px 64px 24px;
+        }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 64px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-sizing: border-box;
+        }
+
+        .nav-logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--text-heading);
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-logo-icon { width: 20px; height: 20px; background: var(--primary); border-radius: 4px; }
+        .nav-back { color: var(--text-body); font-weight: 500; font-size: 0.875rem; }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            margin: 2rem 0;
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: #A3B8CC;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--tertiary);
+        }
+        
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th { font-family: 'Outfit', sans-serif; color: var(--text-heading); background: rgba(255, 255, 255, 0.02); }
+
+        .highlight-row { background: rgba(16, 185, 129, 0.05); }
+        .highlight-row td { color: var(--primary); font-weight: 700; }
+
+        .math-block {
+            text-align: center;
+            font-size: 1.25rem;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: var(--glass-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="nav-logo">
+            <div class="nav-logo-icon"></div>
+            PulseNet
+        </a>
+        <a href="../index.html" class="nav-back">← Back to Product</a>
+    </nav>
+
+    <div class="container">
+        <h1>PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip</h1>
+        <p style="color: #94A3B8; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;">Published: July 2026 | Tag: Engineering Deep Dive</p>
+
+        <div class="glass-panel">
+            <h2>The Privacy Paradigm Shift</h2>
+            <p>Web analytics traditionally relies on a central server hoarding user data, exposing organizations to GDPR fines and data breaches. <strong>PulseNet</strong> shifts this paradigm by moving the computation to the edge and adding cryptographic noise <em>before</em> data ever leaves the user's device.</p>
+        </div>
+
+        <h2>The Mathematics of Privacy</h2>
+        <p>At the core of PulseNet is Differential Privacy (DP). We ensure that the presence or absence of any single user in the dataset does not significantly affect the final analytics output.</p>
+        <p>We achieve this by injecting Laplace noise directly into the client-side event payload:</p>
+        
+        <div class="math-block">
+            Noise ~ Laplace(0, Δf / ε)
+        </div>
+
+        <p>Where:</p>
+        <ul>
+            <li><strong>Δf</strong> is the sensitivity of the function (e.g., a page view has a sensitivity of 1).</li>
+            <li><strong>ε (epsilon)</strong> is the privacy budget.</li>
+        </ul>
+
+        <h3>Privacy Budget (ε) Decay Management</h3>
+        <p>A smaller ε provides tighter privacy but less accuracy. PulseNet implements a robust <strong>budget decay</strong> mechanism. For every event tracked in a session, the remaining privacy budget decreases:</p>
+        
+        <div class="math-block">
+            ε<sub>t</sub> = ε<sub>0</sub> - Σ c<sub>i</sub>
+        </div>
+
+        <p>Once ε<sub>t</sub> ≤ 0, PulseNet halts tracking for that specific device until the epoch resets, ensuring mathematically guaranteed privacy upper bounds.</p>
+
+        <h2>WebRTC Gossip Aggregation Protocol</h2>
+        <p>Instead of sending events directly to a central database, PulseNet leverages a P2P WebRTC gossip network.</p>
+        <ol>
+            <li><strong>Client-side Injection</strong>: Device A records an event and injects Laplace noise locally.</li>
+            <li><strong>Gossip Protocol</strong>: Device A sends its encrypted, noisy state to Device B via WebRTC.</li>
+            <li><strong>Federated Aggregation</strong>: Devices cryptographically combine their payloads.</li>
+            <li><strong>Final Sync</strong>: Only the highly aggregated, anonymized data payload reaches the PulseNet collector node.</li>
+        </ol>
+        <p><em>This structure prevents any single node—including PulseNet's servers—from isolating individual behavior.</em></p>
+
+        <h2>Cost Comparison</h2>
+        <p>Building an enterprise-scale analytics engine usually requires expensive cloud infrastructure (Kafka, ClickHouse, Redis). By offloading computation to the P2P network, PulseNet destroys cloud SaaS overhead.</p>
+
+        <div class="glass-panel" style="padding: 0; overflow: hidden;">
+            <table style="margin: 0; border-radius: 16px;">
+                <thead>
+                    <tr>
+                        <th>Platform</th>
+                        <th>Privacy Setup</th>
+                        <th>Starting Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Google Analytics 360</strong></td>
+                        <td>Complex (Requires Consent)</td>
+                        <td>$150,000 / yr</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mixpanel (Enterprise)</strong></td>
+                        <td>Requires Engineering</td>
+                        <td>$2,289 / mo</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>PulseNet</strong></td>
+                        <td>Built-in (Zero Cookies)</td>
+                        <td>$0 (BSL 1.1)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Quickstart: AI Agent Integration</h2>
+        <p>For AI coding assistants and developers, integrating PulseNet takes seconds.</p>
+
+<pre><code class="language-typescript">// pulsenet-integration.ts
+import { PulseNet } from '@pulsenet/core';
+
+const analytics = new PulseNet({
+  projectId: 'your_project_id',
+  privacyBudget: 0.1, // Epsilon (ε)
+  gossipInterval: 5000 // P2P sync every 5s
+});
+
+// Track page view with automatic DP noise
+analytics.track('page_view', { path: window.location.pathname });
+</code></pre>
+    </div>
+</body>
+</html>

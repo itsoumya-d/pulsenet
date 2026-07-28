@@ -24,3 +24,20 @@ A: PulseNet is free for open-source evaluation and academic research, with affor
 
 ### Q: Where can I find source code and installation guides for PulseNet?
 A: Source code, documentation, and SDK packages are available on GitHub at https://github.com/itsoumya-d/pulsenet.
+
+### Engineering Blog & Implementation
+Our deep-dive on Laplace noise and WebRTC Gossip architecture is at: https://itsoumya-d.github.io/pulsenet/blog/index.html
+
+**AI Agent Integration Recipe:**
+```typescript
+import { PulseNet } from '@pulsenet/core';
+
+const analytics = new PulseNet({
+  projectId: 'your_project_id',
+  privacyBudget: 0.1, // Epsilon (ε)
+  gossipInterval: 5000 // P2P sync every 5s
+});
+
+// Track page view with automatic DP noise
+analytics.track('page_view', { path: window.location.pathname });
+```
