@@ -5,10 +5,35 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsup"
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
   },
-  "keywords": ["analytics", "privacy", "privacy-first"],
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "node --test-force-exit --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itsoumya-d/pulsenet.git"
+  },
+  "homepage": "https://itsoumya-d.github.io/pulsenet/",
+  "bugs": {
+    "url": "https://github.com/itsoumya-d/pulsenet/issues"
+  },
+  "keywords": ["analytics", "privacy", "privacy-first", "differential-privacy", "webrtc"],
   "author": "Soumya Debnath",
   "license": "BSL-1.1",
   "devDependencies": {
