@@ -7,7 +7,7 @@
 
 <div align="center">
   <h1>PulseNet</h1>
-  <p><strong>Privacy-First Analytics with Differential Privacy — Self-Hosted, Zero Cookies, Zero PII.</strong></p>
+  <p><strong>PulseNet aggregates product analytics with differential privacy applied in the browser, so you can read population-level trends without collecting any individual user's raw events.</strong></p>
 
   [![License: BSL 1.1](https://img.shields.io/badge/License-BSL_1.1-red.svg)](https://mariadb.com/bsl11/)
   [![Status](https://img.shields.io/badge/status-pre--release-orange.svg)](#known-limitations)
