@@ -6,18 +6,18 @@
 -->
 
 <div align="center">
-  <h1>PulseNet 🌌</h1>
-  <p><strong>The Zero-Cost, 100% Privacy-First Analytics Infrastructure.</strong></p>
+  <h1>PulseNet</h1>
+  <p><strong>Privacy-First Analytics with Differential Privacy — Self-Hosted, Zero Cookies, Zero PII.</strong></p>
 
-  [![License: AGPL-3.0](https://img.shields.io/badge/License-BSL_1.1-red.svg)](https://mariadb.com/bsl11/)](https://www.gnu.org/licenses/agpl-3.0)
-  [![Go Report Card](https://goreportcard.com/badge/github.com/pulsenet/server)](https://goreportcard.com/report/github.com/pulsenet/server)
+  [![License: BSL 1.1](https://img.shields.io/badge/License-BSL_1.1-red.svg)](https://mariadb.com/bsl11/)
+  [![Status](https://img.shields.io/badge/status-pre--release-orange.svg)](#known-limitations)
   [![Differential Privacy](https://img.shields.io/badge/Privacy-Differential%20Privacy-success.svg)](#privacy-architecture)
   [![No Cookies](https://img.shields.io/badge/Cookies-None-brightgreen.svg)](#gdprccpa-compliance)
 </div>
 
 ---
 
-## 📖 Table of Contents
+## Table of Contents
 1. [What is PulseNet?](#what-is-pulsenet)
 2. [Why PulseNet? (Cost & Comparison)](#why-pulsenet-cost--comparison)
 3. [Architecture](#architecture)
@@ -29,8 +29,9 @@
 9. [API Reference](#api-reference)
 10. [Aggregated Payload Specification](#aggregated-payload-specification)
 11. [Server Deployment & API](#server-deployment--api)
-12. [FAQ](#faq)
-13. [Author & Support](#author--support)
+12. [Known Limitations](#known-limitations)
+13. [FAQ](#faq)
+14. [Author & Support](#author--support)
 
 ---
 
@@ -49,7 +50,7 @@ PulseNet is a complete, self-hosted, privacy-first analytics alternative to Goog
 
 ## Why PulseNet? (Cost & Comparison)
 
-Tired of paying thousands of dollars for Mixpanel, or dealing with the bloated, privacy-invasive nightmare of Google Analytics 4? 
+Tired of paying thousands of dollars for Mixpanel, or dealing with the bloated, privacy-invasive nightmare of Google Analytics 4?
 
 ### The Cost Savings
 | Monthly Tracked Users | Google Analytics 360 | Mixpanel | Plausible / Fathom | **PulseNet** |
@@ -64,11 +65,11 @@ Tired of paying thousands of dollars for Mixpanel, or dealing with the bloated, 
 | Feature                     | PulseNet           | Google Analytics   | Mixpanel         | Plausible       |
 |-----------------------------|--------------------|--------------------|------------------|-----------------|
 | **Data Ownership**          | 100% Yours         | Google's           | Mixpanel's       | Cloud / Yours   |
-| **Differential Privacy**    | ✅ Yes              | ❌ No               | ❌ No             | ❌ No            |
-| **Cookie-free**             | ✅ Yes (always)     | ❌ No (usually)     | ❌ No (usually)   | ✅ Yes           |
-| **GDPR/CCPA compliant**     | ✅ 100% out of box  | ⚠️ Requires config | ⚠️ Requires config| ✅ Yes           |
-| **Bypasses Ad Blockers**    | ✅ Yes (1st party)  | ❌ Blocked          | ❌ Blocked        | ⚠️ Partially    |
-| **SPA / History API Ready** | ✅ Automatic        | ⚠️ Manual config   | ⚠️ Manual config | ✅ Yes           |
+| **Differential Privacy**    | Yes                | No                 | No               | No              |
+| **Cookie-free**             | Yes (always)       | No (usually)       | No (usually)     | Yes             |
+| **GDPR/CCPA compliant**     | Yes (by design)    | Requires config    | Requires config  | Yes             |
+| **Bypasses Ad Blockers**    | Yes (1st party)    | Blocked            | Blocked          | Partially       |
+| **SPA / History API Ready** | Automatic          | Manual config      | Manual config    | Yes             |
 
 ---
 
@@ -111,7 +112,7 @@ graph TD
 
 ## Privacy Architecture & Differential Privacy
 
-PulseNet doesn't just promise privacy; it guarantees it mathematically using Differential Privacy (DP). 
+PulseNet doesn't just promise privacy; it guarantees it mathematically using Differential Privacy (DP).
 
 ### How it works:
 Instead of sending real-time events (e.g., "User A clicked Button B at 10:04 AM"), PulseNet accumulates events in memory for a period (e.g., 60 seconds). Before sending this aggregated data to the server, it applies **Laplace Noise**.
@@ -132,39 +133,14 @@ Because of this noise, **it is mathematically impossible for the server to deter
 
 ---
 
-## 🔬 Federated P2P Aggregation & Differential Privacy (Research-Backed)
+## Federated P2P Aggregation
 
-PulseNet integrates cutting-edge privacy research combining decentralized peer gossip networks with formal differential privacy and secure multi-party computation principles.
+PulseNet optionally supports a `FederatedAggregator` class that gossips pre-noised aggregate buckets between browsers over WebRTC DataChannels, reducing server intake requests. This is an experimental feature exposed via the `FederatedAggregator` export — it does not run by default when you instantiate `PulseNet`.
 
-### 🌐 Federated P2P Aggregation (WebRTC Gossip Protocol)
-- **Decentralized Browser Swarms**: Analytics data is aggregated across active user browsers over WebRTC DataChannel gossip networks.
-- **Serverless Pre-Aggregation**: Peer browsers aggregate histogram buckets locally before transmitting collective summaries to the collector server, reducing server intake requests by up to 99%.
-
-### 🛡️ Enhanced Differential Privacy & Noise Mechanisms
-- **Configurable Epsilon ($\epsilon$) & Delta ($\delta$)**: Granular privacy budget controls. Supports Laplace mechanism for pure $\epsilon$-DP and Gaussian mechanism for $(\epsilon, \delta)$-differential privacy.
-- **Gaussian Noise Engine**: Injects zero-mean Gaussian noise $N(0, \sigma^2)$ derived from standard deviation $\sigma = \frac{\Delta f \sqrt{2\ln(1.25/\delta)}}{\epsilon}$, guaranteeing bounded privacy loss under composition.
-
-### 🔬 Research Foundations
-> **Research Citations:**  
-> - Dwork, C., & Roth, A. (2014). *The Algorithmic Foundations of Differential Privacy*. Foundations and Trends in Theoretical Computer Science, 9(3–4), 211-407.
-> - Bonawitz, K., et al. (2017). *Practical Secure Aggregation for Privacy-Preserving Machine Learning*. ACM Conference on Computer and Communications Security (CCS 2017). [arXiv:1611.04482](https://arxiv.org/abs/1611.04482)
-
-### 💻 Usage Example: Federated Aggregation & Gaussian Noise
-
-```typescript
-import { PulseNet } from '@pulsenet/browser';
-
-const analytics = new PulseNet({
-  appId: 'my-production-app',
-  endpoint: 'https://analytics.mydomain.com/api/collect',
-  federatedGossip: true, // Enables WebRTC P2P browser gossip aggregation
-  privacyBudget: {
-    mechanism: 'gaussian',
-    epsilon: 0.5,
-    delta: 1e-5
-  }
-});
-```
+### Research Foundations
+> **Research Citations:**
+> - Dwork, C., & Roth, A. (2014). *The Algorithmic Foundations of Differential Privacy*. Foundations and Trends in Theoretical Computer Science, 9(3-4), 211-407.
+> - Bonawitz, K., et al. (2017). *Practical Secure Aggregation for Privacy-Preserving Machine Learning*. ACM CCS 2017. [arXiv:1611.04482](https://arxiv.org/abs/1611.04482)
 
 ---
 
@@ -194,22 +170,38 @@ You **do not** need a Cookie Banner to use PulseNet.
 
 ## Installation & Setup
 
-### 1. Install the SDK
+> **PulseNet is not published on npm.** The package name `pulsenet` is not registered. Do not run `npm install pulsenet`.
 
-```bash
-npm install @pulsenet/browser
-# or
-yarn add @pulsenet/browser
+### Option A: jsDelivr CDN from GitHub (no build step)
+
+```html
+<script type="module">
+  import { PulseNet } from 'https://cdn.jsdelivr.net/gh/itsoumya-d/pulsenet@main/dist/index.mjs';
+
+  const analytics = new PulseNet({
+    appId: 'my-production-app',
+    endpoint: 'https://analytics.mydomain.com/api/collect',
+  });
+</script>
 ```
 
-*(Note: If installing from source, build the dist files using `npm run build` or the provided `tsup.config.ts`)*
+### Option B: Build from source
 
-### 2. Basic Initialization
+```bash
+git clone https://github.com/itsoumya-d/pulsenet.git
+cd pulsenet
+npm install
+npm run build
+```
+
+Then import from `./dist/index.mjs` in your project.
+
+### Basic Initialization
 
 Initialize PulseNet as early as possible in your application lifecycle.
 
 ```typescript
-import { PulseNet } from './src/pulsenet'; // or @pulsenet/browser
+import { PulseNet } from './dist/index.mjs';
 
 const analytics = new PulseNet({
   appId: 'my-production-app',
@@ -271,6 +263,8 @@ analytics.timing('api_latency', 'fetch_users', end - start);
 
 ### `class PulseNet`
 
+**Real package name: `pulsenet`** (not `@pulsenet/browser` or `@pulsenet/core` — those do not exist).
+
 #### `constructor(options: PulseNetOptions)`
 Initializes the SDK.
 - `options.appId` (string, required): A unique identifier for your app.
@@ -295,6 +289,16 @@ Manually forces the aggregator to calculate noise and send the payload immediate
 
 #### `destroy()`
 Clears timers, flushes remaining data, and cleans up the SDK.
+
+### `class FederatedAggregator`
+
+Experimental class for gossip-based P2P pre-aggregation. Not enabled by default.
+
+- `connect(signalingUrl: string, channelId: string)`: Connect to a signaling server for peer discovery.
+- `addPeer(channel: RTCDataChannel)`: Register a WebRTC data channel with a peer.
+- `shareLocalAggregates(epsilon?: number, sensitivity?: number)`: Broadcast noised local aggregates to connected peers.
+- `receivePeerData(msg: GossipMessage)`: Merge a peer's aggregate into the global aggregate.
+- `getGlobalAggregate()`: Get the current merged aggregate.
 
 ---
 
@@ -344,7 +348,7 @@ When PulseNet flushes data, it sends a POST request with an `application/json` b
 
 ## Server Deployment & API
 
-The PulseNet backend is an incredibly optimized Go server using SQLite. It compiles to a single binary and uses virtually no RAM.
+The PulseNet backend is a Go server using SQLite. It compiles to a single binary.
 
 ### 1. Build and Run via Docker
 
@@ -369,34 +373,25 @@ go build -o pulsenet-server
 
 ### REST API Endpoints
 
-Once running, your frontend can query the server to display dashboards.
-
 #### `GET /api/stats?appId={appId}`
 Returns total aggregated page views and events across all time.
-```json
-{
-  "appId": "my-app",
-  "pageViews": { "/": 1500, "/about": 400 },
-  "events": { "click": 300 },
-  "totalSessions": 850
-}
-```
 
 #### `GET /api/sessions?appId={appId}`
 Returns session metrics.
-```json
-{
-  "totalSessions": 850,
-  "avgDurationSec": 124.5,
-  "bounceRate": 0.32
-}
-```
-
-#### `GET /api/events?appId={appId}`
-Returns raw event counts.
 
 #### `POST /api/collect`
 The ingestion endpoint used by the SDK. Expects the `PulseNetPayload`.
+
+---
+
+## Known Limitations
+
+- **Pre-release software.** API may change. No production adopters are known yet.
+- **Not published on npm.** The package name `pulsenet` on npm is not registered. Use jsDelivr CDN or build from source (see Installation).
+- **No TURN relay.** The optional `FederatedAggregator` creates WebRTC peer connections for gossip aggregation. Those connections use **STUN-only ICE configuration** — there is no TURN server. STUN cannot traverse symmetric NAT (common on corporate networks) or many mobile carrier-grade NAT deployments; those peers will fail to connect. The `FederatedAggregator` does not surface a distinct "ICE failed" error — a failed connection silently prevents that peer from contributing to the aggregate. If you use `FederatedAggregator` and need reliable connectivity across arbitrary networks, supply your own TURN server and pass the `iceServers` array to the `RTCPeerConnection` constructor in a fork.
+- **Browser-only SDK.** Node.js is not supported (the SDK references `window`, `document`, `sessionStorage`).
+- **Go server required for data persistence.** The client-side SDK alone does not store or visualize data.
+- **Differential Privacy noise at low volumes.** With fewer than ~100 events per flush interval, Laplace noise adds measurable inaccuracy. This is expected behavior, not a bug.
 
 ---
 
@@ -409,32 +404,22 @@ A: Because the noise is drawn from a Laplace distribution centered at zero, the 
 A: The SDK hooks into the `visibilitychange` and `pagehide` browser events. When the user navigates away or closes the tab, a final payload is instantly dispatched using the `navigator.sendBeacon()` API (or a keepalive `fetch`), ensuring zero data loss.
 
 **Q: Can I use this with Next.js or Nuxt?**
-A: Yes! Simply instantiate the PulseNet class in a client-side `useEffect` or `onMounted` hook.
+A: Yes. Simply instantiate the PulseNet class in a client-side `useEffect` or `onMounted` hook.
 
 **Q: Does the backend support Postgres or MySQL?**
-A: Currently, the backend uses `modernc.org/sqlite` for extreme simplicity, zero-dependency deployment, and fast read/writes via WAL mode. Given the payloads are aggregated, a single SQLite database can handle millions of events per month easily.
+A: Currently, the backend uses `modernc.org/sqlite` for extreme simplicity, zero-dependency deployment, and fast read/writes via WAL mode.
 
 ---
 
 ## Author & Support
 
-PulseNet was created to prove that analytics don't need to compromise user privacy or cost a fortune.
-
 **Soumya Debnath**
-- 📧 Email: [soumyadebnath1661@gmail.com](mailto:soumyadebnath1661@gmail.com)
-- 📞 Phone: +91 7031648617
-
-If you find PulseNet useful for your business, please consider starring the repository or contributing to the source code!
+- Email: [soumyadebnath1661@gmail.com](mailto:soumyadebnath1661@gmail.com)
+- Phone: +91 7031648617
 
 ---
 
-<div align="center">
-  <i>Built with ❤️ for a more private web.</i>
-</div>
-
----
-
-## ⚖️ License — Business Source License 1.1
+## License — Business Source License 1.1
 
 > **Source-available, NOT open-source. All production use requires a paid license.**
 > Replaces: Google Analytics, Mixpanel
@@ -449,6 +434,6 @@ If you find PulseNet useful for your business, please consider starring the repo
 
 **Free use limited to:** Personal evaluation, academic research, contributing via PRs.
 
-📧 [soumyadebnath1661@gmail.com](mailto:soumyadebnath1661@gmail.com) · 📞 [+91 7031648617](tel:+917031648617) · 🐙 [github.com/itsoumya-d](https://github.com/itsoumya-d)
+[soumyadebnath1661@gmail.com](mailto:soumyadebnath1661@gmail.com) · [+91 7031648617](tel:+917031648617) · [github.com/itsoumya-d](https://github.com/itsoumya-d)
 
 © 2024-2026 Soumya Debnath. All Rights Reserved.
