@@ -112,7 +112,10 @@ graph TD
 
 ## Privacy Architecture & Differential Privacy
 
-PulseNet doesn't just promise privacy; it guarantees it mathematically using Differential Privacy (DP).
+PulseNet applies a Laplace mechanism to count metrics on-device, before any data is transmitted. Read the
+caveats in this section and in [Known Limitations](#known-limitations) carefully: the noise mechanism itself
+is correctly calibrated, but PulseNet does **not** currently implement privacy budget accounting or
+per-client contribution clipping, which are both required for an end-to-end ε-differential-privacy claim.
 
 ### How it works:
 Instead of sending real-time events (e.g., "User A clicked Button B at 10:04 AM"), PulseNet accumulates events in memory for a period (e.g., 60 seconds). Before sending this aggregated data to the server, it applies **Laplace Noise**.
@@ -121,21 +124,45 @@ Instead of sending real-time events (e.g., "User A clicked Button B at 10:04 AM"
 For any count metric (page views, event clicks, sessions), the reported value is:
 `Reported Value = True Value + Laplace(0, Δf / ε)`
 
-- `Δf` (Sensitivity): The maximum change a single user can have on the output. (In PulseNet, this is 1).
-- `ε` (Epsilon): The privacy budget. A lower epsilon means more privacy (more noise). By default, PulseNet uses ε = 1.0.
-- The random noise is generated securely using inverse transform sampling:
+- `Δf` (Sensitivity): the maximum change a single user can have on the output. PulseNet **passes `Δf = 1` to
+  the noise function but does not enforce it** — there is no per-client contribution clipping, so a client
+  that records N events against the same key moves that count by N. The effective privacy loss for such a
+  client is `N · ε`, not `ε`. See [Known Limitations](#known-limitations).
+- `ε` (Epsilon): the privacy parameter. Lower epsilon means more privacy (more noise). PulseNet uses
+  `ε = 1.0`. **Epsilon is currently hardcoded and cannot be configured** through `PulseNetOptions`.
+- Noise is sampled by inverse transform sampling seeded from `crypto.getRandomValues()` (`Math.random()` is
+  only a fallback when the Web Crypto API is unavailable):
   ```typescript
-  const u = Math.random() - 0.5;
-  const noise = (1 / epsilon) * Math.sign(u) * Math.log(1 - 2 * Math.abs(u));
+  // src/privacy.ts — scale is sensitivity/epsilon
+  const scale = sensitivity / Math.max(epsilon, 1e-5);
+  let u = getSecureRandom() - 0.5;               // crypto-backed
+  const noise = scale * Math.sign(u) * Math.log(1 - 2 * Math.abs(u));
+  return Math.max(0, Math.round(value + noise)); // clamped to a non-negative integer
   ```
 
-Because of this noise, **it is mathematically impossible for the server to determine if a specific user took a specific action**. When aggregated over thousands of users, the random noise cancels out (mean = 0), leaving you with highly accurate aggregate statistics.
+The Laplace scale is correctly calibrated to `sensitivity / epsilon`. Two caveats to understand before
+relying on this:
+
+- The final `Math.max(0, …)` clamp truncates the negative half of the noise, so every reported count is
+  **biased upward**. That bias does not average away as sample size grows — see the accuracy FAQ below.
+- There is **no privacy budget accounting**. Each release draws independent noise, so repeated releases of
+  the same underlying statistic do not compose the way ε-DP requires. See
+  [Known Limitations](#known-limitations).
 
 ---
 
 ## Federated P2P Aggregation
 
-PulseNet optionally supports a `FederatedAggregator` class that gossips pre-noised aggregate buckets between browsers over WebRTC DataChannels, reducing server intake requests. This is an experimental feature exposed via the `FederatedAggregator` export — it does not run by default when you instantiate `PulseNet`.
+PulseNet exports an experimental `FederatedAggregator` class that merges pre-noised aggregate buckets received
+over an `RTCDataChannel`. It does not run by default when you instantiate `PulseNet`.
+
+> **Scope, precisely.** `FederatedAggregator` **does not create any WebRTC connection.** There is no
+> `RTCPeerConnection`, no `iceServers`/STUN/TURN configuration, and no secure-aggregation or multi-party
+> summation protocol in this repository. You must establish the peer connection and data channel yourself and
+> pass the open channel to `addPeer(channel)`. `connect()` only opens a WebSocket to a signaling URL and
+> re-dials every 5 seconds indefinitely (no backoff, no cancellation handle). Merging is a plaintext weighted
+> average that trusts the peer-supplied `contributorCount`, and calling `updateLocal()` currently overwrites
+> previously merged peer state. Do not rely on this for privacy or correctness.
 
 ### Research Foundations
 > **Research Citations:**
@@ -150,21 +177,41 @@ Traditional analytics like Google Analytics load external scripts (e.g., `www.go
 
 **PulseNet bypasses this because:**
 1. **It's bundled in your app:** You import PulseNet directly into your React/Vue/Vanilla JS app. There is no external `<script>` tag.
-2. **It uses your domain:** You deploy the Go server to a subdomain (e.g., `analytics.yourdomain.com`) or proxy it through your main API. Ad blockers do not block first-party requests.
+2. **It uses your domain:** You deploy the Go server to a subdomain (e.g., `analytics.example.com`) or proxy it through your main API. Ad blockers do not block first-party requests.
 3. **No tracking payloads:** The payload looks like application metrics, not tracking data. No device IDs, user IDs, or IPs are sent.
 
 ---
 
 ## GDPR & CCPA Compliance
 
-PulseNet is designed to be compliant with global privacy regulations **out of the box**, without needing a cookie consent banner.
+PulseNet is designed to **reduce your GDPR/CCPA scope** by minimising what is collected. It cannot make an
+application compliant on its own — compliance is a property of your whole deployment, not of a library.
 
-- **No PII:** We never collect IP addresses, emails, or names.
-- **No Fingerprinting:** We do not read device capabilities to create a persistent fingerprint.
-- **No Cookies:** We use `sessionStorage` strictly to measure how long a single tab session lasts. `sessionStorage` is cleared immediately when the tab is closed.
-- **Right to be Forgotten:** Since we never store individual data, there is no personal data to delete upon request.
+What the SDK does do:
 
-You **do not** need a Cookie Banner to use PulseNet.
+- **No cookies.** `sessionStorage` is used only to measure how long a single tab session lasts, and the browser
+  clears it when the tab closes.
+- **No user IDs, no PII fields.** The SDK sends no email, name, user ID or device ID, and the payload contains
+  no per-event records — only counts and percentiles per flush window.
+- **No persistent fingerprint.** `getDeviceCategory()` reads `navigator.userAgent` to bucket the client as
+  `mobile`/`tablet`/`desktop`. That is a single coarse value, not a fingerprint, but it *is* a read of the UA
+  string.
+
+What PulseNet does **not** do, and you remain responsible for:
+
+- **IP addresses.** The SDK never sends an IP, but your collector necessarily receives one with every HTTP
+  request. PulseNet performs **no IP truncation, anonymisation, or scrubbing** — configure that at your
+  reverse proxy, and check your access-log retention.
+- **Consent.** There is no consent gate, no Do-Not-Track handling and no `enable()`-by-default-off mode. Note
+  that ePrivacy Directive Art. 5(3) governs *any* storage in a user's terminal equipment, not only cookies,
+  so the `sessionStorage` write is not automatically exempt. **Whether you need a consent banner is a legal
+  question for your counsel — this README cannot answer it for you.**
+- **Data-subject requests / retention.** The collector has no deletion endpoint and no retention limit; rows
+  accumulate indefinitely in SQLite. Aggregates keyed by `appId` with timestamps, exact referrer hostnames and
+  exact timing percentiles are stored verbatim. You must implement your own retention and erasure process.
+- **The unnoised fields.** `referrers`, all `timing` percentiles, `sessions.avgDurationSec`,
+  `sessions.bounceRate` and `devices` are transmitted without noise. At low traffic these can be
+  attributable to individuals.
 
 ---
 
@@ -180,12 +227,28 @@ You **do not** need a Cookie Banner to use PulseNet.
 
   const analytics = new PulseNet({
     appId: 'my-production-app',
-    endpoint: 'https://analytics.mydomain.com/api/collect',
+    endpoint: 'https://analytics.example.com/api/collect',
   });
 </script>
 ```
 
-### Option B: Build from source
+### Option B: Classic `<script>` tag (IIFE global build)
+
+`dist/index.global.js` is a browser global build. It attaches a **namespace object** (not the class itself) to
+`window.PulseNet`, so the constructor is `PulseNet.PulseNet`:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/itsoumya-d/pulsenet@main/dist/index.global.js"></script>
+<script>
+  // note the double reference: the global is the module namespace
+  var analytics = new PulseNet.PulseNet({
+    appId: 'my-production-app',
+    endpoint: 'https://analytics.example.com/api/collect',
+  });
+</script>
+```
+
+### Option C: Build from source
 
 ```bash
 git clone https://github.com/itsoumya-d/pulsenet.git
@@ -205,7 +268,7 @@ import { PulseNet } from './dist/index.mjs';
 
 const analytics = new PulseNet({
   appId: 'my-production-app',
-  endpoint: 'https://analytics.mydomain.com/api/collect',
+  endpoint: 'https://analytics.example.com/api/collect',
   flushInterval: 60000, // Aggregate and send every 60 seconds
   debug: process.env.NODE_ENV !== 'production'
 });
@@ -304,7 +367,12 @@ Experimental class for gossip-based P2P pre-aggregation. Not enabled by default.
 
 ## Aggregated Payload Specification
 
-When PulseNet flushes data, it sends a POST request with an `application/json` body. Here is exactly what the server sees. Notice there is **no user-level data**:
+When PulseNet flushes data, it sends a POST request with an `application/json` body. Here is exactly what the
+server sees — counts and percentiles per flush window, with no per-event records.
+
+> **Which fields carry noise:** only `pageViews`, `events` and `sessions.count`. The values in `timing`,
+> `referrers`, `devices`, `sessions.avgDurationSec` and `sessions.bounceRate` are sent **verbatim**. The
+> `noiseLevel` field reports the epsilon used for the three noised fields only.
 
 ```json
 {
@@ -357,9 +425,12 @@ A `Dockerfile` is included in the `/server` directory.
 ```bash
 cd server
 docker build -t pulsenet-server .
-docker run -p 4003:4003 -v $(pwd)/data:/app/data pulsenet-server
+docker run -p 4003:4003 -v "$(pwd)/data:/app" pulsenet-server
 ```
-*(Ensure you mount a volume so your SQLite database persists!)*
+> **Mount `/app`, not `/app/data`.** The server opens the *relative* path `pulsenet.db` and the image sets
+> `WORKDIR /app`, so the database is created at `/app/pulsenet.db`. Mounting a volume at `/app/data` leaves
+> the database inside the container's writable layer, and **all collected analytics are lost on every
+> container restart.**
 
 ### 2. Run locally (Go required)
 
@@ -388,17 +459,59 @@ The ingestion endpoint used by the SDK. Expects the `PulseNetPayload`.
 
 - **Pre-release software.** API may change. No production adopters are known yet.
 - **Not published on npm.** The package name `pulsenet` on npm is not registered. Use jsDelivr CDN or build from source (see Installation).
-- **No TURN relay.** The optional `FederatedAggregator` creates WebRTC peer connections for gossip aggregation. Those connections use **STUN-only ICE configuration** — there is no TURN server. STUN cannot traverse symmetric NAT (common on corporate networks) or many mobile carrier-grade NAT deployments; those peers will fail to connect. The `FederatedAggregator` does not surface a distinct "ICE failed" error — a failed connection silently prevents that peer from contributing to the aggregate. If you use `FederatedAggregator` and need reliable connectivity across arbitrary networks, supply your own TURN server and pass the `iceServers` array to the `RTCPeerConnection` constructor in a fork.
+- **No privacy budget enforcement.** `src/privacy.ts` contains a `PrivacyBudgetTracker`, but neither
+  `addLaplaceNoise` nor `addGaussianNoise` calls it, and it is not exported from `src/index.ts`. Nothing
+  limits how many noised releases are produced, so the ε value is a per-release parameter, not a cumulative
+  budget. Do not describe a PulseNet deployment as providing an end-to-end ε-DP guarantee.
+- **Sensitivity is assumed, not enforced.** There is no per-client contribution clipping anywhere. A single
+  client recording N events against one key has that count released with noise calibrated for `Δf = 1`.
+- **Counts are biased upward, not merely noisy.** The `Math.max(0, …)` clamp in `addLaplaceNoise` removes the
+  negative half of the noise distribution. Because the collector sums payloads, this bias accumulates
+  linearly with the number of contributing clients. See the accuracy FAQ.
+- **Only three fields are noised.** `pageViews`, `events` and `sessions.count` receive Laplace noise.
+  `sessions.avgDurationSec`, `sessions.bounceRate`, all `timing` percentiles, `referrers` and `devices` are
+  transmitted **verbatim**. A `p95`/`p99` over a small sample is close to an order statistic and can reveal
+  one individual's exact measurement.
+- **`FederatedAggregator` does not create peer connections.** It contains no `RTCPeerConnection`, no ICE or
+  STUN/TURN configuration, and no secure-aggregation protocol. You must construct the
+  `RTCPeerConnection` and `RTCDataChannel` yourself and hand the channel to `addPeer()`. Peer merging is a
+  plaintext weighted average that trusts the peer-supplied `contributorCount`, and `updateLocal()` currently
+  overwrites previously merged peer state. Treat it as an unfinished experiment.
+- **Idle tabs still transmit.** Because `sessions.count` is `Math.max(0, round(0 + Laplace(1)))`, roughly 30%
+  of flush intervals with no activity still emit a payload reporting a non-zero session count.
+- **`history.pushState` is not restored by `destroy()`.** Each `new PulseNet()` wraps `pushState` again, and
+  `destroy()` does not unwrap it, so repeated mount/unmount cycles (React StrictMode, HMR) inflate page views.
+- **No input validation.** A missing or misspelled `endpoint` results in a POST to the relative URL
+  `undefined`; the failure is swallowed unless `debug: true`.
 - **Browser-only SDK.** Node.js is not supported (the SDK references `window`, `document`, `sessionStorage`).
 - **Go server required for data persistence.** The client-side SDK alone does not store or visualize data.
-- **Differential Privacy noise at low volumes.** With fewer than ~100 events per flush interval, Laplace noise adds measurable inaccuracy. This is expected behavior, not a bug.
+- **Collector read endpoints are unauthenticated.** `GET /api/stats`, `/api/events` and `/api/sessions`
+  require only an `appId`, which is public by construction. Put them behind a reverse proxy with
+  authentication before exposing the collector to the internet.
+- **Differential Privacy noise at low volumes.** With fewer than ~100 events per flush interval, Laplace noise
+  adds substantial inaccuracy. This is expected behavior, not a bug.
 
 ---
 
 ## FAQ
 
-**Q: If the data has random noise, isn't it inaccurate?**
-A: Because the noise is drawn from a Laplace distribution centered at zero, the noise cancels out as your sample size grows. If 10,000 users visit your site, the noise added will typically be between -3 and +3. An error margin of 3 on 10,000 visitors is statistically insignificant, but mathematically prevents tracing an individual.
+**Q: If the data has random noise, how inaccurate is it?**
+A: More inaccurate than you might expect, and biased in one direction. Each *client* noises its own aggregate
+independently and the collector sums those payloads, so the error grows with the number of contributing
+clients rather than averaging away:
+
+| Contributing clients (1 view each) | True total | Typical reported total | Mean absolute error |
+|---|---|---|---|
+| 100 | 100 | ~118 | ~18 |
+| 1,000 | 1,000 | ~1,179 | ~179 |
+| 10,000 | 10,000 | ~11,767 | ~1,767 |
+| 100,000 | 100,000 | ~117,660 | ~17,660 |
+
+Two effects combine. First, summing N independent `Laplace(1)` draws gives a random error with standard
+deviation `sqrt(2N)` — about ±141 at N = 10,000, not ±3. Second, and larger: the `Math.max(0, …)` clamp
+truncates negative noise, so `E[reported | true = 1] ≈ 1.18` rather than 1.0, producing a systematic **~18%
+upward bias** that does *not* cancel out at scale. Treat PulseNet counts as directional trend indicators, not
+as accurate totals. Reproduce these figures by sampling `addLaplaceNoise(1, 1, 1.0)` and summing.
 
 **Q: What happens if a user closes the tab before the 60-second flush interval?**
 A: The SDK hooks into the `visibilitychange` and `pagehide` browser events. When the user navigates away or closes the tab, a final payload is instantly dispatched using the `navigator.sendBeacon()` API (or a keepalive `fetch`), ensuring zero data loss.
@@ -407,7 +520,10 @@ A: The SDK hooks into the `visibilitychange` and `pagehide` browser events. When
 A: Yes. Simply instantiate the PulseNet class in a client-side `useEffect` or `onMounted` hook.
 
 **Q: Does the backend support Postgres or MySQL?**
-A: Currently, the backend uses `modernc.org/sqlite` for extreme simplicity, zero-dependency deployment, and fast read/writes via WAL mode.
+A: Not currently. The backend uses `modernc.org/sqlite` for simplicity and CGO-free deployment. Note that WAL
+mode is **not** enabled — `NewStore` opens the database with no `journal_mode` pragma — and `GetPayloads`
+loads every row for an `appId` into memory on each stats request, with no retention policy or pagination.
+Both are worth addressing before running this at volume.
 
 ---
 

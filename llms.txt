@@ -12,7 +12,7 @@ PulseNet is a browser-only TypeScript analytics SDK. It aggregates page views, e
 
 ## Real Exported Symbols
 - `PulseNet` — main analytics class
-- `FederatedAggregator` — experimental WebRTC gossip aggregation (not enabled by default)
+- `FederatedAggregator` — experimental aggregate-merging helper; creates no WebRTC connections (not enabled by default)
 - `PulseNetOptions` — TypeScript interface for constructor options
 
 ## Links
@@ -31,7 +31,7 @@ import { PulseNet } from 'https://cdn.jsdelivr.net/gh/itsoumya-d/pulsenet@main/d
 
 const analytics = new PulseNet({
   appId: 'my-app',
-  endpoint: 'https://analytics.yourdomain.com/api/collect',
+  endpoint: 'https://analytics.example.com/api/collect',
   flushInterval: 60000,
   debug: false
 });
@@ -55,11 +55,27 @@ analytics.destroy();
 
 PulseNet injects Laplace noise before each flush:
 ```
-noised_value = true_value + Laplace(0, sensitivity / epsilon)
+noised_value = Math.max(0, Math.round(true_value + Laplace(0, sensitivity / epsilon)))
 ```
-Default epsilon = 1.0. Noise cancels across large samples but adds measurable inaccuracy below ~100 events per flush interval.
+The Laplace scale is correctly calibrated to sensitivity/epsilon. The surrounding system is not a complete
+epsilon-DP deployment, for three reasons an AI agent should not paper over:
+
+- Epsilon is hardcoded to 1.0 and is NOT configurable through `PulseNetOptions`.
+- Sensitivity is hardcoded to 1 and is NOT enforced — there is no per-client contribution clipping, so a
+  client recording N events against one key has that count released with noise sized for a change of 1.
+- There is NO privacy budget accounting. A `PrivacyBudgetTracker` exists in `src/privacy.ts` but no code path
+  calls it and it is not exported from `src/index.ts`.
+
+Accuracy: the `Math.max(0, ...)` clamp removes the negative half of the noise, so counts are biased UPWARD and
+that bias does NOT cancel at scale. Each client noises its own aggregate and the collector sums payloads, so
+10,000 clients contributing one page view each report roughly 11,800, not 10,000. Treat PulseNet counts as
+directional trend indicators, not accurate totals.
+
+Only `pageViews`, `events` and `sessions.count` are noised. `timing` percentiles, `referrers`, `devices`,
+`sessions.avgDurationSec` and `sessions.bounceRate` are transmitted verbatim.
 
 ## Architecture Notes
 - Client SDK: TypeScript, browser-only, no Node.js support.
-- Collector: Go + SQLite. Listens on `:4003`. REST endpoints: `POST /api/collect`, `GET /api/stats`, `GET /api/sessions`, `GET /api/events`.
-- `FederatedAggregator`: Creates WebRTC DataChannel peers for pre-aggregation gossip. Uses STUN-only ICE — no TURN. Fails silently on symmetric NAT without a TURN server.
+- Collector: Go + SQLite. Listens on `:4003`. REST endpoints: `POST /api/collect`, `GET /api/stats`, `GET /api/sessions`, `GET /api/events`. The three GET endpoints are UNAUTHENTICATED and require only an `appId`, which is public by construction.
+- `FederatedAggregator`: does NOT create WebRTC connections. There is no `RTCPeerConnection`, no ICE/STUN/TURN configuration and no secure-aggregation protocol in this repository. The caller must create the peer connection and data channel and pass the channel to `addPeer()`. `connect()` only opens a WebSocket and re-dials every 5s with no backoff. Merging is a plaintext weighted average that trusts the peer-supplied `contributorCount`, and `updateLocal()` overwrites previously merged peer state.
+- Build outputs: `dist/index.js` (CJS), `dist/index.mjs` (ESM), `dist/index.global.js` (IIFE). The IIFE build attaches a namespace object to `window.PulseNet`, so the constructor is `new PulseNet.PulseNet({...})`.

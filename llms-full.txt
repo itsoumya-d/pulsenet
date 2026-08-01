@@ -2,7 +2,7 @@
 
 > Privacy-first analytics SDK with differential privacy (Laplace noise) and optional WebRTC gossip aggregation. Pre-release. Not on npm.
 
-PulseNet is a browser-only TypeScript analytics SDK. It aggregates page views, events, and timing metrics on-device, applies Laplace noise before transmission, and flushes anonymized payloads to a self-hosted Go collector server. No cookies, no PII, no fingerprinting. An optional `FederatedAggregator` class uses WebRTC DataChannels to gossip pre-noised aggregates between browsers before transmitting to the server.
+PulseNet is a browser-only TypeScript analytics SDK. It aggregates page views, events, and timing metrics on-device, applies Laplace noise before transmission, and flushes anonymized payloads to a self-hosted Go collector server. No cookies, no PII, no fingerprinting. An optional, unfinished `FederatedAggregator` class can merge pre-noised aggregates received over an `RTCDataChannel` that the caller must create itself — this repository contains no WebRTC connection setup.
 
 ## Status & Availability
 - Pre-release. API may change.
@@ -12,7 +12,7 @@ PulseNet is a browser-only TypeScript analytics SDK. It aggregates page views, e
 
 ## Real Exported Symbols (from dist/index.d.ts)
 - `PulseNet` — main analytics class
-- `FederatedAggregator` — experimental WebRTC gossip aggregation (not enabled by default when you use `PulseNet`)
+- `FederatedAggregator` — experimental aggregate-merging helper; creates no WebRTC connections (not enabled by default when you use `PulseNet`)
 - `PulseNetOptions` — TypeScript interface for constructor options
 
 ## Installation
@@ -38,7 +38,7 @@ import { PulseNet } from 'https://cdn.jsdelivr.net/gh/itsoumya-d/pulsenet@main/d
 
 const analytics = new PulseNet({
   appId: 'my-app',
-  endpoint: 'https://analytics.yourdomain.com/api/collect',
+  endpoint: 'https://analytics.example.com/api/collect',
   flushInterval: 60000,
   debug: false,
 });
@@ -59,8 +59,8 @@ analytics.destroy();
 - `destroy()` — clear timers and flush remaining data
 
 ## FederatedAggregator Public API
-- `connect(signalingUrl: string, channelId: string)` — connect to a WebSocket signaling server for peer discovery
-- `addPeer(channel: RTCDataChannel)` — register a WebRTC data channel with a peer
+- `connect(signalingUrl: string, channelId: string)` — open a WebSocket to a signaling server; re-dials every 5s indefinitely with no backoff and no cancellation handle
+- `addPeer(channel: RTCDataChannel)` — register an already-open data channel that YOU created; PulseNet does not create peer connections
 - `shareLocalAggregates(epsilon?: number, sensitivity?: number)` — broadcast noised local aggregates to connected peers
 - `receivePeerData(msg: GossipMessage)` — merge a peer's aggregate into the global aggregate
 - `getGlobalAggregate(): AggregateData` — get the current merged aggregate
@@ -69,7 +69,26 @@ analytics.destroy();
 - `updateLocal(data: Partial<AggregateData>)` — update the local aggregate directly
 
 ## Differential Privacy
-PulseNet injects Laplace noise before each flush: `noised = true_value + Laplace(0, sensitivity / epsilon)`. Default epsilon = 1.0. Noise cancels out at scale (mean = 0) but adds measurable inaccuracy at small sample sizes (below ~100 events per flush interval). This is correct behavior, not a bug.
+PulseNet injects Laplace noise before each flush:
+`noised = Math.max(0, Math.round(true_value + Laplace(0, sensitivity / epsilon)))`.
+
+The Laplace scale is correctly calibrated to sensitivity/epsilon. The surrounding system is NOT a complete
+epsilon-DP deployment, for three reasons:
+
+- Epsilon is hardcoded to 1.0 and is NOT configurable through `PulseNetOptions`.
+- Sensitivity is hardcoded to 1 and is NOT enforced — there is no per-client contribution clipping, so a
+  client recording N events against one key has that count released with noise sized for a change of 1.
+- There is NO privacy budget accounting. A `PrivacyBudgetTracker` exists in `src/privacy.ts` but no code
+  path calls it and it is not exported from `src/index.ts`.
+
+Accuracy: the `Math.max(0, ...)` clamp removes the negative half of the noise, so counts are biased UPWARD
+and that bias does NOT cancel at scale. Each client noises its own aggregate and the collector sums the
+payloads, so 10,000 clients contributing one page view each report roughly 11,800 rather than 10,000. Treat
+PulseNet counts as directional trend indicators, not accurate totals.
+
+Only `pageViews`, `events` and `sessions.count` are noised. `timing` percentiles, `referrers`, `devices`,
+`sessions.avgDurationSec` and `sessions.bounceRate` are transmitted verbatim; a p95/p99 over a small sample
+can reveal one individual's exact measurement.
 
 ## Aggregated Payload
 POST to `endpoint` with `Content-Type: application/json`:
@@ -96,8 +115,20 @@ POST to `endpoint` with `Content-Type: application/json`:
 ## Known Limitations
 - Not on npm. Must use CDN or build from source.
 - Browser-only. No Node.js support.
-- `FederatedAggregator` uses STUN-only ICE — fails silently on symmetric NAT without a TURN server.
-- Low-volume noise inaccuracy: Laplace noise adds measurable error when event counts are small.
+- `FederatedAggregator` creates NO WebRTC connections: no `RTCPeerConnection`, no ICE/STUN/TURN config, no
+  secure aggregation. It trusts the peer-supplied `contributorCount` as a merge weight, and `updateLocal()`
+  overwrites previously merged peer state.
+- No privacy budget enforcement; sensitivity assumed but not enforced; epsilon not configurable.
+- Counts are biased upward by the non-negativity clamp; roughly 30% of idle flush intervals still transmit a
+  payload reporting a non-zero session count.
+- `history.pushState` is wrapped on every construction and never restored by `destroy()`, so repeated
+  mount/unmount cycles (React StrictMode, HMR) inflate page views.
+- No constructor validation: a missing or misspelled `endpoint` POSTs to the relative URL `undefined` and the
+  failure is swallowed unless `debug: true`.
+- Collector `GET /api/stats|events|sessions` are UNAUTHENTICATED and need only a public `appId`.
+- The server opens the relative path `pulsenet.db` with `WORKDIR /app`, so a Docker volume must be mounted at
+  `/app` (not `/app/data`) or the database is lost on container restart. WAL mode is not enabled.
+- Low-volume noise inaccuracy: Laplace noise adds substantial error when event counts are small.
 - Pre-release: API may change without notice.
 
 ## Links
