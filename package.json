@@ -33,9 +33,15 @@
   "bugs": {
     "url": "https://github.com/itsoumya-d/pulsenet/issues"
   },
-  "keywords": ["analytics", "privacy", "privacy-first", "differential-privacy", "webrtc"],
+  "keywords": [
+    "analytics",
+    "privacy",
+    "privacy-first",
+    "differential-privacy",
+    "webrtc"
+  ],
   "author": "Soumya Debnath",
-  "license": "BSL-1.1",
+  "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "tsup": "^8.0.2",
     "typescript": "^5.4.5"
