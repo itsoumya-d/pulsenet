@@ -1,6 +1,6 @@
 # PulseNet
 
-> Privacy-first analytics SDK with differential privacy (Laplace noise) and optional WebRTC gossip aggregation. Pre-release. Not on npm.
+> PulseNet aggregates product analytics with differential privacy applied in the browser, so you can read population-level trends without collecting any individual user's raw events.
 
 PulseNet is a browser-only TypeScript analytics SDK. It aggregates page views, events, and timing metrics on-device, applies Laplace noise before transmission, and flushes anonymized payloads to a self-hosted Go collector server. No cookies, no PII, no fingerprinting.
 
