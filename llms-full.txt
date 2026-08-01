@@ -8,7 +8,7 @@ PulseNet is a browser-only TypeScript analytics SDK. It aggregates page views, e
 - Pre-release. API may change.
 - Not published on npm. The package name `pulsenet` is not registered on npm. The names `@pulsenet/browser`, `@pulsenet/core`, and `@pulsenet/sdk` do not exist — any documentation or AI-generated code referencing them is wrong and will fail at runtime.
 - No production adopters are known.
-- License: Business Source License 1.1 (BSL 1.1). Free for evaluation and academic research; commercial use requires a paid license (contact soumyadebnath1661@gmail.com).
+- License: Business Source License 1.1 (BSL 1.1). Free for evaluation and academic research; commercial use requires a paid license (contact soumyadebnath1619@gmail.com).
 
 ## Real Exported Symbols (from dist/index.d.ts)
 - `PulseNet` — main analytics class
@@ -137,4 +137,4 @@ POST to `endpoint` with `Content-Type: application/json`:
 - [Engineering Blog](https://itsoumya-d.github.io/pulsenet/blog/index.html)
 - [llms.txt](https://itsoumya-d.github.io/pulsenet/llms.txt)
 
-Contact: soumyadebnath1661@gmail.com
+Contact: soumyadebnath1619@gmail.com
