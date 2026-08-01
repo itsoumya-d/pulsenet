@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip</title>
-    <meta name="description" content="A deep dive into PulseNet's privacy-first analytics engine. Learn how we use Laplace noise, differential privacy budget decay, and WebRTC gossip aggregation to build a $0 cost Google Analytics alternative.">
-    <meta name="keywords" content="PulseNet, Differential Privacy, Laplace noise, WebRTC gossip, zero-cookie analytics, GDPR compliant, Google Analytics alternative, free Web Analytics">
+    <title>PulseNet Protocol: Zero-Cookie Web Analytics Powered by Client-Side Differential Privacy</title>
+    <meta name="description" content="A deep dive into PulseNet's privacy-first analytics engine. How on-device Laplace noise works, what it does and does not guarantee, and how to self-host a $0 cost Google Analytics alternative.">
+    <meta name="keywords" content="PulseNet, Differential Privacy, Laplace noise, client-side analytics, zero-cookie analytics, GDPR compliant, Google Analytics alternative, free Web Analytics">
     <link rel="canonical" href="https://itsoumya-d.github.io/pulsenet/blog/index.html">
 
-    <meta property="og:title" content="PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip">
-    <meta property="og:description" content="A deep dive into PulseNet's privacy-first analytics engine. Learn how we use Laplace noise, differential privacy, and WebRTC gossip aggregation.">
+    <meta property="og:title" content="PulseNet Protocol: Zero-Cookie Web Analytics Powered by Client-Side Differential Privacy">
+    <meta property="og:description" content="A deep dive into PulseNet's privacy-first analytics engine: on-device Laplace noise, what it guarantees, and what it does not.">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://itsoumya-d.github.io/pulsenet/blog/index.html">
     <meta name="twitter:card" content="summary_large_image">
@@ -23,8 +23,8 @@
     {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      "headline": "PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip",
-      "description": "A deep dive into PulseNet's privacy-first analytics engine using Laplace noise, differential privacy budget decay, and WebRTC gossip aggregation.",
+      "headline": "PulseNet Protocol: Zero-Cookie Web Analytics Powered by Client-Side Differential Privacy",
+      "description": "A deep dive into PulseNet's privacy-first analytics engine using on-device Laplace noise, including a precise account of what the current implementation does and does not guarantee.",
       "author": {
         "@type": "Person",
         "name": "Soumya Debnath"
@@ -180,17 +180,17 @@
     </nav>
 
     <div class="container">
-        <h1>PulseNet Protocol: Zero-Cookie Web Analytics Powered by Differential Privacy and WebRTC Gossip</h1>
+        <h1>PulseNet Protocol: Zero-Cookie Web Analytics Powered by Client-Side Differential Privacy</h1>
         <p style="color: #94A3B8; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;">Published: July 2026 | Tag: Engineering Deep Dive</p>
 
         <div class="glass-panel">
             <h2>The Privacy Paradigm Shift</h2>
-            <p>Web analytics traditionally relies on a central server hoarding user data, exposing organizations to GDPR fines and data breaches. <strong>PulseNet</strong> shifts this paradigm by moving the computation to the edge and adding cryptographic noise <em>before</em> data ever leaves the user's device.</p>
+            <p>Web analytics traditionally relies on a central server hoarding user data, exposing organizations to GDPR fines and data breaches. <strong>PulseNet</strong> shifts this paradigm by moving aggregation to the edge and adding cryptographically seeded noise <em>before</em> data ever leaves the user's device.</p>
         </div>
 
         <h2>The Mathematics of Privacy</h2>
-        <p>At the core of PulseNet is Differential Privacy (DP). We ensure that the presence or absence of any single user in the dataset does not significantly affect the final analytics output.</p>
-        <p>We achieve this by injecting Laplace noise directly into the client-side event payload:</p>
+        <p>At the core of PulseNet is a Laplace mechanism, the standard building block of Differential Privacy (DP). The goal is that the presence or absence of any single user in the dataset should not significantly affect the final analytics output.</p>
+        <p>We inject Laplace noise directly into the client-side event payload, on-device, before transmission:</p>
         
         <div class="math-block">
             Noise ~ Laplace(0, Δf / ε)
@@ -198,31 +198,39 @@
 
         <p>Where:</p>
         <ul>
-            <li><strong>Δf</strong> is the sensitivity of the function (e.g., a page view has a sensitivity of 1).</li>
-            <li><strong>ε (epsilon)</strong> is the privacy budget.</li>
+            <li><strong>Δf</strong> is the sensitivity of the function (e.g., a single page view has a sensitivity of 1).</li>
+            <li><strong>ε (epsilon)</strong> is the privacy parameter. PulseNet uses ε = 1.0.</li>
         </ul>
 
-        <h3>Privacy Budget (ε) Decay Management</h3>
-        <p>A smaller ε provides tighter privacy but less accuracy. PulseNet implements a robust <strong>budget decay</strong> mechanism. For every event tracked in a session, the remaining privacy budget decreases:</p>
-        
+        <p>The sampler itself is correctly calibrated: the noise scale genuinely tracks <code>sensitivity / epsilon</code>, it is seeded from <code>crypto.getRandomValues()</code>, and the noise is genuinely applied on the device rather than on the server. The final value is clamped to a non-negative integer:</p>
+
         <div class="math-block">
-            ε<sub>t</sub> = ε<sub>0</sub> - Σ c<sub>i</sub>
+            noised_value = Math.max(0, Math.round(true_value + Laplace(0, sensitivity / epsilon)))
         </div>
 
-        <p>Once ε<sub>t</sub> ≤ 0, PulseNet halts tracking for that specific device until the epoch resets, ensuring mathematically guaranteed privacy upper bounds.</p>
+        <h3>What PulseNet Does <em>Not</em> Currently Guarantee</h3>
+        <p>A correctly calibrated Laplace sampler is necessary for an ε-DP claim, but it is not sufficient. Three gaps in the current implementation mean <strong>you should not describe a PulseNet deployment as providing an end-to-end ε-differential-privacy guarantee</strong>:</p>
+        <ul>
+            <li><strong>There is no privacy budget accounting, and no budget decay.</strong> <code>src/privacy.ts</code> defines a <code>PrivacyBudgetTracker</code>, but no code path calls it, and it is not exported from <code>src/index.ts</code>. Nothing decrements a budget, nothing halts tracking when a budget is exhausted, and nothing composes the privacy loss across successive releases. Each flush draws fresh independent noise, so repeated releases of the same underlying statistic do not compose the way ε-DP requires.</li>
+            <li><strong>Sensitivity is assumed, not enforced.</strong> Δf = 1 is passed to the noise function, but there is no per-client contribution clipping anywhere. A client that records N events against one key has that count released with noise sized for a change of 1, so the effective loss for that client is N · ε.</li>
+            <li><strong>Epsilon is not configurable.</strong> It is a hardcoded private field with no <code>PulseNetOptions</code> entry and no setter.</li>
+        </ul>
+        <p>There is also an accuracy consequence worth stating plainly: the <code>Math.max(0, …)</code> clamp truncates the negative half of the noise distribution, so every reported count is biased <strong>upward</strong>, and because the collector sums per-client payloads that bias accumulates linearly rather than cancelling out. Ten thousand clients contributing one page view each report roughly 11,800, not 10,000. Treat PulseNet counts as directional trend indicators, not as accurate totals.</p>
+        <p>Only <code>pageViews</code>, <code>events</code> and <code>sessions.count</code> receive noise. <code>timing</code> percentiles, <code>referrers</code>, <code>devices</code>, <code>sessions.avgDurationSec</code> and <code>sessions.bounceRate</code> are transmitted verbatim.</p>
 
-        <h2>WebRTC Gossip Aggregation Protocol</h2>
-        <p>Instead of sending events directly to a central database, PulseNet leverages a P2P WebRTC gossip network.</p>
+        <h2>Federated Aggregation: An Unfinished Experiment</h2>
+        <p>PulseNet exports a <code>FederatedAggregator</code> class. It is <strong>not</strong> enabled when you instantiate <code>PulseNet</code>, and it is considerably less than its name suggests. Stated precisely, so that nobody builds on a promise that is not in the repository:</p>
         <ol>
-            <li><strong>Client-side Injection</strong>: Device A records an event and injects Laplace noise locally.</li>
-            <li><strong>Gossip Protocol</strong>: Device A sends its encrypted, noisy state to Device B via WebRTC.</li>
-            <li><strong>Federated Aggregation</strong>: Devices cryptographically combine their payloads.</li>
-            <li><strong>Final Sync</strong>: Only the highly aggregated, anonymized data payload reaches the PulseNet collector node.</li>
+            <li><strong>It creates no peer connections.</strong> There is no <code>RTCPeerConnection</code>, no <code>iceServers</code>/STUN/TURN configuration, and no NAT-traversal logic anywhere in this codebase. You must construct the <code>RTCPeerConnection</code> and <code>RTCDataChannel</code> yourself and hand the open channel to <code>addPeer(channel)</code>.</li>
+            <li><strong>There is no secure aggregation and no cryptographic combination of payloads.</strong> Merging is a plaintext weighted average. Peers exchange noised aggregates as ordinary JSON over whatever channel you supply.</li>
+            <li><strong>It trusts peer-supplied weights.</strong> <code>receivePeerData()</code> uses the peer's own <code>contributorCount</code> as the merge weight with no validation, so a single dishonest peer can dominate the aggregate.</li>
+            <li><strong>Merged peer state is discarded.</strong> The next call to <code>updateLocal()</code> recomputes the global aggregate from the local one, throwing away previously merged contributions.</li>
+            <li><strong><code>connect()</code> only opens a WebSocket</strong> to a signaling URL and re-dials every 5 seconds indefinitely, with no backoff, no cap and no cancellation handle.</li>
         </ol>
-        <p><em>This structure prevents any single node—including PulseNet's servers—from isolating individual behavior.</em></p>
+        <p><em>Treat it as a sketch of a direction, not as a working privacy mechanism.</em></p>
 
         <h2>Cost Comparison</h2>
-        <p>Building an enterprise-scale analytics engine usually requires expensive cloud infrastructure (Kafka, ClickHouse, Redis). By offloading computation to the P2P network, PulseNet destroys cloud SaaS overhead.</p>
+        <p>Building an enterprise-scale analytics engine usually requires expensive cloud infrastructure (Kafka, ClickHouse, Redis). PulseNet's collector is a single Go binary writing to SQLite, which is what removes the cloud SaaS overhead — the SDK aggregates on-device so the collector only ever receives per-flush-window summaries.</p>
 
         <div class="glass-panel" style="padding: 0; overflow: hidden;">
             <table style="margin: 0; border-radius: 16px;">
@@ -254,20 +262,39 @@
         </div>
 
         <h2>Quickstart: AI Agent Integration</h2>
-        <p>For AI coding assistants and developers, integrating PulseNet takes seconds.</p>
+        <p>For AI coding assistants and developers, this is the <strong>verified</strong> integration path. Note that PulseNet is not published on npm — the package names <code>@pulsenet/core</code>, <code>@pulsenet/browser</code> and <code>@pulsenet/sdk</code> do not exist. Import from the jsDelivr CDN or build from source.</p>
 
 <pre><code class="language-typescript">// pulsenet-integration.ts
-import { PulseNet } from '@pulsenet/core';
+import { PulseNet } from 'https://cdn.jsdelivr.net/gh/itsoumya-d/pulsenet@main/dist/index.mjs';
 
 const analytics = new PulseNet({
-  projectId: 'your_project_id',
-  privacyBudget: 0.1, // Epsilon (ε)
-  gossipInterval: 5000 // P2P sync every 5s
+  appId: 'my-app',                                          // required
+  endpoint: 'https://analytics.example.com/api/collect',    // required — your self-hosted collector
+  flushInterval: 60000,                                     // optional, default 60000 ms
+  debug: false                                              // optional
 });
 
-// Track page view with automatic DP noise
-analytics.track('page_view', { path: window.location.pathname });
+// Track a page view. Auto-tracking is already on by default;
+// call this explicitly for routes your router does not emit.
+analytics.pageView('/dashboard');
+
+// Track a custom event. NOTE: the optional second `properties` argument
+// is accepted by the signature but silently discarded — only the event
+// name is counted, so encode any dimension you need into the name itself.
+analytics.track('button_clicked');
+
+// Track timing
+const start = performance.now();
+// ... work ...
+analytics.timing('api', 'fetch_users', performance.now() - start);
+
+// Flush and clean up
+analytics.destroy();
 </code></pre>
+
+        <p><code>appId</code> and <code>endpoint</code> are the only required options, and there is currently <strong>no constructor validation</strong> — a missing or misspelled <code>endpoint</code> will POST to the relative URL <code>undefined</code> and swallow the failure unless <code>debug: true</code> is set. There is no <code>projectId</code>, no <code>privacyBudget</code> and no <code>gossipInterval</code> option; epsilon cannot be configured at all.</p>
+
+        <p>For a classic <code>&lt;script&gt;</code> tag, <code>dist/index.global.js</code> attaches a <strong>namespace object</strong> to <code>window.PulseNet</code>, so the constructor is <code>new PulseNet.PulseNet({ ... })</code>.</p>
     </div>
 </body>
 </html>
