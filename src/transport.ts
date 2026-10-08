@@ -3,38 +3,50 @@
 // See LICENSE file for details. Production use requires a paid license.
 // Contact: soumyadebnath1619@gmail.com
 
-import { PulseNetPayload } from './types';
+export type TransportResult = 'acknowledged' | 'beacon-queued';
 
 export class TransportLayer {
-  private endpoint: string;
+  constructor(private endpoint: string) {}
 
-  constructor(endpoint: string) {
-    this.endpoint = endpoint;
-  }
-
-  async send(payload: PulseNetPayload): Promise<void> {
-    const data = JSON.stringify(payload);
-    
-    // Try beacon first for page unloads
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      const blob = new Blob([data], { type: 'application/json' });
-      if (navigator.sendBeacon(this.endpoint, blob)) {
-        return;
+  async send(data: string, useBeacon = false): Promise<TransportResult> {
+    // A true return means browser-queued, never an acknowledgement from the server.
+    if (useBeacon && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      try {
+        if (navigator.sendBeacon(this.endpoint, new Blob([data], { type: 'application/json' }))) {
+          return 'beacon-queued';
+        }
+      } catch {
+        // A throwing or refused beacon may still recover through fetch.
       }
     }
 
-    // Fallback to fetch
-    if (typeof fetch !== 'undefined') {
-      try {
-        await fetch(this.endpoint, {
+    if (typeof fetch === 'undefined') throw new Error('Fetch is unavailable');
+
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      // Bound the wait even if a transport ignores abort; late results cannot
+      // acknowledge another attempt. Ambiguous network outcomes may duplicate.
+      const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error('Analytics request timed out'));
+          controller.abort();
+        }, 10000);
+      });
+      const response = await Promise.race([
+        fetch(this.endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: data,
-          keepalive: true
-        });
-      } catch (e) {
-        console.error('[PulseNet] Failed to send analytics payload', e);
-      }
+          keepalive: true,
+          signal: controller.signal,
+        }),
+        timeout,
+      ]);
+      if (!response.ok) throw new Error(`Analytics request failed with HTTP ${response.status}`);
+      return 'acknowledged';
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
     }
   }
 }

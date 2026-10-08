@@ -202,9 +202,15 @@ describe('FederatedAggregator', () => {
 
   test('connect() without WebSocket available logs warning, does not throw', () => {
     const fa = new FederatedAggregator();
-    // WebSocket is not defined in Node.js test environment — the method early-returns
-    assert.doesNotThrow(() => fa.connect('ws://localhost:9999', 'ch1'));
-    // No timer is set because WebSocket is undefined; nothing to clean up.
+    // Modern Node exposes WebSocket. Explicitly simulate its absence so this
+    // test exercises the guard without opening a socket or a reconnect timer.
+    const original = globalThis.WebSocket;
+    try {
+      globalThis.WebSocket = undefined;
+      assert.doesNotThrow(() => fa.connect('ws://localhost:9999', 'ch1'));
+    } finally {
+      globalThis.WebSocket = original;
+    }
   });
 });
 

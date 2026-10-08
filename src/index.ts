@@ -4,5 +4,5 @@
 // Contact: soumyadebnath1619@gmail.com
 
 export { PulseNet } from './pulsenet';
-export type { PulseNetOptions } from './types';
+export type { PulseNetOptions, DeliveryStatus } from './types';
 export { FederatedAggregator } from './federated-aggregator';

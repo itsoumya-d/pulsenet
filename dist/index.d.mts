@@ -1,3 +1,17 @@
+interface PulseNetOptions {
+    endpoint: string;
+    appId: string;
+    flushInterval?: number;
+    debug?: boolean;
+}
+/** Cumulative per-instance outcomes. Beacon acceptance is not delivery proof. */
+interface DeliveryStatus {
+    pendingPayloads: number;
+    acknowledgedPayloads: number;
+    beaconQueuedPayloads: number;
+    droppedPayloads: number;
+}
+
 declare class PulseNet {
     private options;
     private aggregator;
@@ -5,6 +19,11 @@ declare class PulseNet {
     private transport;
     private timer;
     private enabled;
+    private pending;
+    private draining?;
+    private acknowledgedPayloads;
+    private beaconQueuedPayloads;
+    private droppedPayloads;
     private boundVisibilityHandler;
     private boundPagehideHandler;
     constructor(options?: any);
@@ -14,14 +33,10 @@ declare class PulseNet {
     pageView(path?: string): void;
     timing(category: string, variable: string, durationMs: number): void;
     flush(): Promise<void>;
+    getDeliveryStatus(): DeliveryStatus;
+    private enqueueAndFlush;
+    private drain;
     destroy(): void;
-}
-
-interface PulseNetOptions {
-    endpoint: string;
-    appId: string;
-    flushInterval?: number;
-    debug?: boolean;
 }
 
 interface AggregateData {
@@ -51,4 +66,4 @@ declare class FederatedAggregator {
     addPeer(channel: RTCDataChannel): void;
 }
 
-export { FederatedAggregator, PulseNet, type PulseNetOptions };
+export { type DeliveryStatus, FederatedAggregator, PulseNet, type PulseNetOptions };
