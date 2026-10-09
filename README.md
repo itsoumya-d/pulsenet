@@ -348,10 +348,46 @@ Records a timing metric. The SDK will compute p50, p95, and p99 percentiles loca
 Temporarily pause or resume tracking.
 
 #### `flush()`
-Manually forces the aggregator to calculate noise and send the payload immediately. (Automatically called on `pagehide` / `visibilitychange`).
+Returns `Promise<void>`. Snapshots current activity and attempts queued payloads in FIFO order.
+Regular/manual flushes use `fetch` and remove a snapshot only after a successful HTTP response.
+Failures are retained for the next manual, interval or lifecycle flush; `flush()` itself does not throw
+on a transport failure. Overlapping flushes share a single active drain.
+Activity recorded while a request is pending goes into a separate snapshot.
+
+#### `getDeliveryStatus()`
+Returns a copy of cumulative, in-memory delivery counters for this instance:
+`{ pendingPayloads, acknowledgedPayloads, beaconQueuedPayloads, droppedPayloads }`.
+`acknowledgedPayloads` means an HTTP 2xx response, not an independent check of collector storage.
+`beaconQueuedPayloads` means the browser accepted a beacon, **not** confirmed delivery.
+
+### Delivery and recovery limits
+
+- Retries reuse the exact serialized payload, original window and already-sampled noise.
+- Each fetch has a 10-second timeout with abort. A failed drain stops after that attempt;
+  a later flush retries. There are at most 3 attempts per snapshot, including the first.
+  After exhaustion, the snapshot is dropped and counted. Later flushes can continue with newer snapshots.
+- The queue holds at most 10 snapshots including the in-flight one. Each serialized snapshot
+  may be at most 60 KiB of UTF-8. A full queue drops the **newest** snapshot; an oversized snapshot
+  is also dropped. Both increment `droppedPayloads`. These limits bound the retained delivery
+  queue, not the active aggregator's event names or timing samples before a flush.
+- Empty windows do not sample noise or send requests. Timing-only and session-only activity still flush.
+- `visibilitychange` to hidden and `pagehide` prefer `sendBeacon`; refused or throwing beacons
+  fall back to keepalive fetch. Accepted beacons leave the queue and are not blindly retried.
+  An already-running fetch is not duplicated on pagehide; unsent queued snapshots use the
+  lifecycle transport when the current request finishes, if the page remains alive.
+- `disable()` pauses new tracking and queued attempts after any in-flight request finishes.
+  `enable()` resumes tracking; the next flush resumes delivery.
+- The queue is memory-only. Closing/reloading the page, exhausted attempts, queue/size limits,
+  browser keepalive quotas or failed beacons can lose data. If a server commits a request but its
+  response is lost, retrying can produce duplicates. The collector has no idempotency protocol:
+  **there is no exactly-once or zero-loss guarantee**.
+
+For an offline recovery demonstration using only synthetic data and mocked transports:
+`npm ci && npm run build && node --test tests/delivery.test.mjs`.
 
 #### `destroy()`
-Clears timers, flushes remaining data, and cleans up the SDK.
+Clears the periodic timer and lifecycle listeners, then makes a final flush attempt. It does not
+wait for acknowledgement or keep retrying after teardown; the memory-only delivery limits still apply.
 
 ### `class FederatedAggregator`
 
@@ -477,8 +513,6 @@ The ingestion endpoint used by the SDK. Expects the `PulseNetPayload`.
   `RTCPeerConnection` and `RTCDataChannel` yourself and hand the channel to `addPeer()`. Peer merging is a
   plaintext weighted average that trusts the peer-supplied `contributorCount`, and `updateLocal()` currently
   overwrites previously merged peer state. Treat it as an unfinished experiment.
-- **Idle tabs still transmit.** Because `sessions.count` is `Math.max(0, round(0 + Laplace(1)))`, roughly 30%
-  of flush intervals with no activity still emit a payload reporting a non-zero session count.
 - **`history.pushState` is not restored by `destroy()`.** Each `new PulseNet()` wraps `pushState` again, and
   `destroy()` does not unwrap it, so repeated mount/unmount cycles (React StrictMode, HMR) inflate page views.
 - **No input validation.** A missing or misspelled `endpoint` results in a POST to the relative URL
@@ -514,7 +548,9 @@ upward bias** that does *not* cancel out at scale. Treat PulseNet counts as dire
 as accurate totals. Reproduce these figures by sampling `addLaplaceNoise(1, 1, 1.0)` and summing.
 
 **Q: What happens if a user closes the tab before the 60-second flush interval?**
-A: The SDK hooks into the `visibilitychange` and `pagehide` browser events. When the user navigates away or closes the tab, a final payload is instantly dispatched using the `navigator.sendBeacon()` API (or a keepalive `fetch`), ensuring zero data loss.
+A: The SDK attempts a final flush on `visibilitychange` and `pagehide`, preferring `navigator.sendBeacon()`
+with keepalive `fetch` as fallback. Beacon acceptance only confirms browser queueing. In-flight requests,
+closed pages, network failures and browser quotas can still lose data; see [Delivery and recovery limits](#delivery-and-recovery-limits).
 
 **Q: Can I use this with Next.js or Nuxt?**
 A: Yes. Simply instantiate the PulseNet class in a client-side `useEffect` or `onMounted` hook.

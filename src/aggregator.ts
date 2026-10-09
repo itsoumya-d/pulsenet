@@ -59,6 +59,13 @@ export class Aggregator {
     return arr[Math.max(0, Math.min(arr.length - 1, index))];
   }
 
+  // Check real activity before sampling noise; timing-only windows count too.
+  hasData(): boolean {
+    return Object.keys(this.pageViews).length > 0 ||
+      Object.keys(this.events).length > 0 ||
+      Object.keys(this.timing).length > 0 || this.totalSessions > 0;
+  }
+
   getPayload(appId: string): PulseNetPayload {
     const end = Date.now();
     const start = this.startTime;

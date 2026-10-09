@@ -21,3 +21,11 @@ export interface PulseNetPayload {
   devices: Record<string, number>;
   noiseLevel: number;
 }
+
+/** Cumulative per-instance outcomes. Beacon acceptance is not delivery proof. */
+export interface DeliveryStatus {
+  pendingPayloads: number;
+  acknowledgedPayloads: number;
+  beaconQueuedPayloads: number;
+  droppedPayloads: number;
+}

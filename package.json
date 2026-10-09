@@ -21,7 +21,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
-    "test": "node --test-force-exit --test tests/*.test.mjs",
+    "test": "node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
